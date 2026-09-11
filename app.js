@@ -1,12 +1,16 @@
-import { cards } from './cards.js';
+import { cards, domains } from './cards.js';
 
 const STORAGE_KEY = 'personal-learning-os:v0.1';
 const FSRS_CDN = 'https://cdn.jsdelivr.net/npm/ts-fsrs@5.4.2/+esm';
+
+const domainById = new Map(domains.map(domain => [domain.id, domain]));
+const cardById = new Map(cards.map(card => [card.id, card]));
 
 let fsrsLib = null;
 let scheduler = null;
 let engineName = '简化排程';
 let state = loadState();
+let selectedDomainId = resolveInitialDomain();
 let session = null;
 let ratingLocked = false;
 
@@ -15,10 +19,17 @@ const el = {
   reviewView: document.querySelector('#reviewView'),
   summaryView: document.querySelector('#summaryView'),
   engineBadge: document.querySelector('#engineBadge'),
+  homeLead: document.querySelector('#homeLead'),
   dueCount: document.querySelector('#dueCount'),
   reviewedToday: document.querySelector('#reviewedToday'),
   knownToday: document.querySelector('#knownToday'),
-  deckSelect: document.querySelector('#deckSelect'),
+  domainGrid: document.querySelector('#domainGrid'),
+  domainIcon: document.querySelector('#domainIcon'),
+  domainName: document.querySelector('#domainName'),
+  domainStatusBadge: document.querySelector('#domainStatusBadge'),
+  domainDescription: document.querySelector('#domainDescription'),
+  domainModes: document.querySelector('#domainModes'),
+  koreanNotice: document.querySelector('#koreanNotice'),
   sessionSize: document.querySelector('#sessionSize'),
   startBtn: document.querySelector('#startBtn'),
   emptyHint: document.querySelector('#emptyHint'),
@@ -29,10 +40,13 @@ const el = {
   categoryLabel: document.querySelector('#categoryLabel'),
   questionImage: document.querySelector('#questionImage'),
   questionText: document.querySelector('#questionText'),
+  audioPromptBtn: document.querySelector('#audioPromptBtn'),
+  answerLabel: document.querySelector('#answerLabel'),
   selfAnswer: document.querySelector('#selfAnswer'),
   revealBtn: document.querySelector('#revealBtn'),
   referenceBlock: document.querySelector('#referenceBlock'),
   referenceAnswer: document.querySelector('#referenceAnswer'),
+  speakAnswerBtn: document.querySelector('#speakAnswerBtn'),
   summaryGood: document.querySelector('#summaryGood'),
   summaryHard: document.querySelector('#summaryHard'),
   summaryAgain: document.querySelector('#summaryAgain'),
@@ -44,7 +58,8 @@ const el = {
 await init();
 
 async function init() {
-  populateDecks();
+  renderDomainGrid();
+  renderDomainDetail();
   bindEvents();
   updateNetworkState();
   renderHomeStats();
@@ -75,9 +90,10 @@ async function initScheduler() {
 
 function defaultState() {
   return {
-    version: 1,
+    version: 2,
     schedules: {},
     history: [],
+    preferences: { lastDomain: 'phone' },
   };
 }
 
@@ -91,6 +107,10 @@ function loadState() {
       ...parsed,
       schedules: parsed.schedules || {},
       history: Array.isArray(parsed.history) ? parsed.history : [],
+      preferences: {
+        ...defaultState().preferences,
+        ...(parsed.preferences || {}),
+      },
     };
   } catch (error) {
     console.warn('读取本地学习记录失败，已使用空记录。', error);
@@ -102,19 +122,88 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function populateDecks() {
-  const decks = [...new Set(cards.map(card => card.deck))].sort();
-  el.deckSelect.innerHTML = '';
-  el.deckSelect.append(new Option('全部领域', 'all'));
-  decks.forEach(deck => el.deckSelect.append(new Option(deck, deck)));
+function resolveInitialDomain() {
+  const saved = state.preferences?.lastDomain;
+  if (saved && domainById.has(saved)) return saved;
+  return domains.find(domain => domain.status === 'active')?.id || domains[0]?.id || 'phone';
+}
+
+function renderDomainGrid() {
+  el.domainGrid.innerHTML = '';
+
+  domains.forEach(domain => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `domain-choice${domain.id === selectedDomainId ? ' selected' : ''}`;
+    button.dataset.domain = domain.id;
+
+    const count = cards.filter(card => card.domain === domain.id).length;
+    button.innerHTML = `
+      <span class="domain-choice-icon">${domain.icon}</span>
+      <span class="domain-choice-copy">
+        <strong>${domain.name}</strong>
+        <small>${domain.status === 'active' ? `${count} 张训练卡` : domain.statusLabel}</small>
+      </span>
+      <span class="domain-choice-state">${domain.status === 'active' ? '进入' : '规划'}</span>
+    `;
+
+    button.addEventListener('click', () => selectDomain(domain.id));
+    el.domainGrid.append(button);
+  });
+}
+
+function selectDomain(domainId) {
+  if (!domainById.has(domainId)) return;
+  selectedDomainId = domainId;
+  state.preferences.lastDomain = domainId;
+  saveState();
+
+  el.domainGrid.querySelectorAll('[data-domain]').forEach(button => {
+    button.classList.toggle('selected', button.dataset.domain === domainId);
+  });
+
+  renderDomainDetail();
+  renderHomeStats();
+}
+
+function renderDomainDetail() {
+  const domain = domainById.get(selectedDomainId) || domains[0];
+  if (!domain) return;
+
+  el.domainIcon.textContent = domain.icon;
+  el.domainName.textContent = domain.name;
+  el.domainStatusBadge.textContent = domain.statusLabel;
+  el.domainStatusBadge.classList.toggle('planned', domain.status !== 'active');
+  el.domainDescription.textContent = domain.description;
+  el.koreanNotice.classList.toggle('hidden', domain.id !== 'korean');
+
+  el.domainModes.innerHTML = '';
+  (domain.modes || []).forEach(mode => {
+    const item = document.createElement('div');
+    const future = mode.status !== '可用';
+    item.className = `mode-item${future ? ' future' : ''}`;
+    item.innerHTML = `<strong>${mode.label}</strong><span>${mode.status}</span>`;
+    el.domainModes.append(item);
+  });
+
+  el.homeLead.textContent = domain.id === 'korean'
+    ? '韩语先自己想、自己写、自己听，再看答案；语音对话会沿着同一条学习记录继续。'
+    : '今天的目标不是刷分，而是把“好像知道”变成“真的能说出来”。';
 }
 
 function bindEvents() {
-  el.deckSelect.addEventListener('change', renderHomeStats);
   el.startBtn.addEventListener('click', startSession);
   el.exitBtn.addEventListener('click', exitSession);
   el.revealBtn.addEventListener('click', revealAnswer);
   el.backHomeBtn.addEventListener('click', () => showView('home'));
+  el.audioPromptBtn.addEventListener('click', () => {
+    const card = currentCard();
+    if (card?.audioText) speakKorean(card.audioText);
+  });
+  el.speakAnswerBtn.addEventListener('click', () => {
+    const card = currentCard();
+    if (card?.tts) speakKorean(card.tts);
+  });
 
   document.querySelectorAll('[data-rating]').forEach(button => {
     button.addEventListener('click', () => rateCurrentCard(button.dataset.rating));
@@ -125,22 +214,43 @@ function bindEvents() {
 }
 
 function renderHomeStats() {
-  const selectedDeck = el.deckSelect.value || 'all';
-  const due = getDueCards(selectedDeck);
+  const domain = domainById.get(selectedDomainId);
+  const due = getDueCards(selectedDomainId);
   const today = localDayKey(new Date());
-  const todayHistory = state.history.filter(item => item.day === today);
+  const todayHistory = state.history.filter(item => item.day === today && historyDomain(item) === selectedDomainId);
 
   el.dueCount.textContent = due.length;
   el.reviewedToday.textContent = todayHistory.length;
   el.knownToday.textContent = todayHistory.filter(item => item.rating === 'good').length;
-  el.startBtn.disabled = due.length === 0;
-  el.emptyHint.classList.toggle('hidden', due.length !== 0);
+
+  const active = domain?.status === 'active';
+  el.startBtn.disabled = !active || due.length === 0;
+  el.startBtn.textContent = active ? `开始 ${domain.name} 复习` : `${domain?.name || '该领域'}｜规划中`;
+
+  if (!active) {
+    el.emptyHint.textContent = '这个领域的训练结构已经预留，题库会在后续阶段接入。';
+    el.emptyHint.classList.remove('hidden');
+  } else if (!due.length) {
+    el.emptyHint.textContent = '当前没有到期卡片，稍后再来即可。';
+    el.emptyHint.classList.remove('hidden');
+  } else {
+    el.emptyHint.classList.add('hidden');
+  }
 }
 
-function getDueCards(deck = 'all') {
+function historyDomain(item) {
+  if (item.domain) return item.domain;
+  const card = cardById.get(item.cardId);
+  if (card?.domain) return card.domain;
+  if (item.deck === '手机产品专家') return 'phone';
+  if (item.deck === '韩语') return 'korean';
+  return 'unknown';
+}
+
+function getDueCards(domainId) {
   const now = Date.now();
   return cards
-    .filter(card => deck === 'all' || card.deck === deck)
+    .filter(card => card.domain === domainId)
     .filter(card => {
       const record = state.schedules[card.id];
       if (!record) return true;
@@ -162,8 +272,10 @@ function getDueTimestamp(record) {
 }
 
 function startSession() {
-  const deck = el.deckSelect.value || 'all';
-  const available = getDueCards(deck);
+  const domain = domainById.get(selectedDomainId);
+  if (!domain || domain.status !== 'active') return;
+
+  const available = getDueCards(selectedDomainId);
   if (!available.length) return;
 
   const sizeValue = el.sessionSize.value;
@@ -171,6 +283,7 @@ function startSession() {
   const queue = available.slice(0, Math.max(1, limit));
 
   session = {
+    domainId: selectedDomainId,
     queue,
     index: 0,
     counts: { good: 0, hard: 0, again: 0 },
@@ -180,26 +293,36 @@ function startSession() {
   renderCurrentCard();
 }
 
+function currentCard() {
+  if (!session) return null;
+  return session.queue[session.index] || null;
+}
+
 function renderCurrentCard() {
   if (!session || session.index >= session.queue.length) {
     finishSession();
     return;
   }
 
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   ratingLocked = false;
-  const card = session.queue[session.index];
+  const card = currentCard();
   const current = session.index + 1;
   const total = session.queue.length;
+  const domain = domainById.get(card.domain);
 
   el.progressText.textContent = `${current} / ${total}`;
   el.progressBar.style.width = `${((current - 1) / total) * 100}%`;
-  el.deckLabel.textContent = card.deck;
+  el.deckLabel.textContent = domain ? `${domain.icon} ${domain.name}` : card.deck;
   el.categoryLabel.textContent = card.category || '未分类';
   el.questionText.textContent = card.question;
+  el.answerLabel.textContent = card.promptLabel || '先写下你的理解';
+  el.selfAnswer.placeholder = card.placeholder || '不用追求完整，先把你真正能回忆出来的内容写下来……';
   el.selfAnswer.value = '';
   el.referenceAnswer.textContent = card.answer;
   el.referenceBlock.classList.add('hidden');
   el.revealBtn.classList.remove('hidden');
+  el.speakAnswerBtn.classList.add('hidden');
 
   if (card.image) {
     el.questionImage.src = card.image;
@@ -209,22 +332,48 @@ function renderCurrentCard() {
     el.questionImage.classList.add('hidden');
   }
 
+  el.audioPromptBtn.classList.toggle('hidden', !card.audioText);
+  el.audioPromptBtn.textContent = card.audioText ? '🔊 播放韩语' : '';
+
   setTimeout(() => el.selfAnswer.focus(), 80);
 }
 
 function revealAnswer() {
+  const card = currentCard();
+  if (!card) return;
+
   el.referenceBlock.classList.remove('hidden');
   el.revealBtn.classList.add('hidden');
+  el.speakAnswerBtn.classList.toggle('hidden', !card.tts);
   requestAnimationFrame(() => {
     el.referenceBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
+}
+
+function speakKorean(text) {
+  if (!text) return;
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    window.alert('当前浏览器不支持系统语音朗读。');
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ko-KR';
+  utterance.rate = 0.9;
+
+  const voices = window.speechSynthesis.getVoices();
+  const koreanVoice = voices.find(voice => (voice.lang || '').toLowerCase().startsWith('ko'));
+  if (koreanVoice) utterance.voice = koreanVoice;
+
+  window.speechSynthesis.speak(utterance);
 }
 
 function rateCurrentCard(rating) {
   if (!session || ratingLocked) return;
   ratingLocked = true;
 
-  const card = session.queue[session.index];
+  const card = currentCard();
   const now = new Date();
   const answer = el.selfAnswer.value.trim();
 
@@ -233,8 +382,10 @@ function rateCurrentCard(rating) {
   state.history.push({
     id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     cardId: card.id,
+    domain: card.domain,
     deck: card.deck,
     category: card.category || '',
+    modality: card.audioText ? 'listening' : 'recall',
     rating,
     answer,
     reviewedAt: now.toISOString(),
@@ -328,6 +479,8 @@ function scheduleFallback(cardId, rating, now) {
 
 function finishSession() {
   if (!session) return;
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
   const { good, hard, again } = session.counts;
   const total = good + hard + again;
   const knownRate = total ? Math.round((good / total) * 100) : 0;
@@ -336,7 +489,7 @@ function finishSession() {
   el.summaryHard.textContent = hard;
   el.summaryAgain.textContent = again;
   el.summaryMessage.textContent = total
-    ? `本轮独立掌握率 ${knownRate}%。模糊和不认识都不是失败，它们只是告诉系统哪些内容需要更早回来。`
+    ? `本轮独立掌握率 ${knownRate}%。模糊和不认识会更早回来，认识的内容会逐步拉长复习间隔。`
     : '本轮没有记录。';
 
   el.progressBar.style.width = '100%';
@@ -355,6 +508,7 @@ function exitSession() {
     ? '退出本轮复习？已经完成的题目会保留记录。'
     : '退出本轮复习？';
   if (window.confirm(message)) {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     session = null;
     renderHomeStats();
     showView('home');
@@ -365,7 +519,10 @@ function showView(name) {
   el.homeView.classList.toggle('hidden', name !== 'home');
   el.reviewView.classList.toggle('hidden', name !== 'review');
   el.summaryView.classList.toggle('hidden', name !== 'summary');
-  if (name === 'home') renderHomeStats();
+  if (name === 'home') {
+    renderDomainDetail();
+    renderHomeStats();
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
