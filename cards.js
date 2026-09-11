@@ -1,4 +1,57 @@
-export const cards = [
+export const domains = [
+  {
+    id: 'phone',
+    icon: '📱',
+    name: '手机产品专家',
+    description: '手机硬件、参数→体验、后续看图识机与竞品训练。',
+    status: 'active',
+    statusLabel: '可学习',
+    modes: [
+      { label: '主动回忆', status: '可用' },
+      { label: '参数 → 体验', status: '可用' },
+      { label: '看图识机', status: '下一阶段' },
+    ],
+  },
+  {
+    id: 'korean',
+    icon: '🇰🇷',
+    name: '韩语',
+    description: '主动表达、听力与跟读优先，最终接入 AI 连续语音对话。',
+    status: 'active',
+    statusLabel: '可学习',
+    modes: [
+      { label: '中 → 韩主动表达', status: '可用' },
+      { label: '听力 / 跟读', status: '可用' },
+      { label: 'AI 情景口语', status: '下一阶段' },
+    ],
+  },
+  {
+    id: 'retail',
+    icon: '🗺️',
+    name: '商圈与零售',
+    description: '商圈空间认知、渠道、门店、用户与零售经营案例训练。',
+    status: 'planned',
+    statusLabel: '规划中',
+    modes: [
+      { label: '商圈识别', status: '规划中' },
+      { label: '零售案例', status: '规划中' },
+    ],
+  },
+  {
+    id: 'industry',
+    icon: '🌍',
+    name: '行业与商业',
+    description: '品牌、市场结构、渠道区域、商业模式与战略判断。',
+    status: 'planned',
+    statusLabel: '规划中',
+    modes: [
+      { label: '行业知识', status: '规划中' },
+      { label: '商业判断', status: '规划中' },
+    ],
+  },
+];
+
+const mobileCards = [
   {
     id: 'hardware-soc-001',
     deck: '手机产品专家',
@@ -209,4 +262,163 @@ export const cards = [
     question: '为什么产品专家不能只背参数？',
     answer: '因为消费者购买的是体验和任务完成能力。产品专家需要把参数转化成场景价值、适用人群、购买理由和可演示的体验。'
   }
+];
+
+const koreanCards = [
+  {
+    id: 'ko-production-001',
+    deck: '韩语',
+    category: '基础表达',
+    question: '用韩语说：你好。',
+    answer: '안녕하세요.\n常用礼貌问候语。',
+    tts: '안녕하세요.',
+    promptLabel: '先写下你能想出的韩语',
+    placeholder: '不要先看答案，先把韩语写出来……'
+  },
+  {
+    id: 'ko-production-002',
+    deck: '韩语',
+    category: '基础表达',
+    question: '用韩语说：谢谢。',
+    answer: '감사합니다.\n正式、常用的“谢谢”。',
+    tts: '감사합니다.',
+    promptLabel: '先写下你能想出的韩语',
+    placeholder: '先主动回忆，再看参考答案……'
+  },
+  {
+    id: 'ko-production-003',
+    deck: '韩语',
+    category: '基础表达',
+    question: '用韩语说：对不起。',
+    answer: '죄송합니다.\n较正式、礼貌的道歉表达。',
+    tts: '죄송합니다.',
+    promptLabel: '先写下你能想出的韩语'
+  },
+  {
+    id: 'ko-production-004',
+    deck: '韩语',
+    category: '基础表达',
+    question: '用韩语说：没关系 / 没事。',
+    answer: '괜찮아요.\n也可以根据语境表达“可以”“还好”。',
+    tts: '괜찮아요.',
+    promptLabel: '先写下你能想出的韩语'
+  },
+  {
+    id: 'ko-production-005',
+    deck: '韩语',
+    category: '生存韩语',
+    question: '用韩语说：请慢一点说。',
+    answer: '천천히 말해 주세요.\n천천히 = 慢慢地；말해 주세요 = 请说。',
+    tts: '천천히 말해 주세요.',
+    promptLabel: '先写下你能想出的韩语'
+  },
+  {
+    id: 'ko-production-006',
+    deck: '韩语',
+    category: '生存韩语',
+    question: '用韩语说：请再说一遍。',
+    answer: '다시 말해 주세요.\n다시 = 再、重新。',
+    tts: '다시 말해 주세요.',
+    promptLabel: '先写下你能想出的韩语'
+  },
+  {
+    id: 'ko-production-007',
+    deck: '韩语',
+    category: '基础句型',
+    question: '用韩语说：这个是什么？',
+    answer: '이게 뭐예요?\n이게 = 这个；뭐예요? = 是什么？',
+    tts: '이게 뭐예요?',
+    promptLabel: '先写下你能想出的韩语'
+  },
+  {
+    id: 'ko-production-008',
+    deck: '韩语',
+    category: '生存韩语',
+    question: '用韩语说：洗手间在哪里？',
+    answer: '화장실이 어디예요?\n어디예요? = 在哪里？',
+    tts: '화장실이 어디예요?',
+    promptLabel: '先写下你能想出的韩语'
+  },
+  {
+    id: 'ko-production-009',
+    deck: '韩语',
+    category: '主动表达',
+    question: '用韩语说：我喜欢咖啡。',
+    answer: '저는 커피를 좋아해요.\n좋아해요 = 喜欢。',
+    tts: '저는 커피를 좋아해요.',
+    promptLabel: '先写下完整韩语句子'
+  },
+  {
+    id: 'ko-production-010',
+    deck: '韩语',
+    category: '主动表达',
+    question: '用韩语说：我想学韩语。',
+    answer: '저는 한국어를 배우고 싶어요.\n-고 싶어요 = 想做……。',
+    tts: '저는 한국어를 배우고 싶어요.',
+    promptLabel: '先写下完整韩语句子'
+  },
+  {
+    id: 'ko-production-011',
+    deck: '韩语',
+    category: '主动表达',
+    question: '用韩语说：今天有点累。',
+    answer: '오늘 좀 피곤해요.\n좀 = 有点；피곤해요 = 累。',
+    tts: '오늘 좀 피곤해요.',
+    promptLabel: '先写下完整韩语句子'
+  },
+  {
+    id: 'ko-production-012',
+    deck: '韩语',
+    category: '基础句型',
+    question: '用韩语说：现在几点？',
+    answer: '지금 몇 시예요?\n지금 = 现在；몇 시예요? = 几点？',
+    tts: '지금 몇 시예요?',
+    promptLabel: '先写下你能想出的韩语'
+  },
+  {
+    id: 'ko-listen-001',
+    deck: '韩语',
+    category: '听力 / 听写',
+    question: '听音频，写下你听到的韩语。',
+    answer: '괜찮아요.\n意思：没关系 / 没事 / 可以。',
+    audioText: '괜찮아요.',
+    tts: '괜찮아요.',
+    promptLabel: '写下你听到的韩语',
+    placeholder: '可以重复播放，但先不要看答案……'
+  },
+  {
+    id: 'ko-listen-002',
+    deck: '韩语',
+    category: '听力 / 听写',
+    question: '听音频，写下你听到的韩语。',
+    answer: '천천히 말해 주세요.\n意思：请慢一点说。',
+    audioText: '천천히 말해 주세요.',
+    tts: '천천히 말해 주세요.',
+    promptLabel: '写下你听到的韩语'
+  },
+  {
+    id: 'ko-listen-003',
+    deck: '韩语',
+    category: '听力 / 听写',
+    question: '听音频，写下你听到的韩语。',
+    answer: '오늘 좀 피곤해요.\n意思：今天有点累。',
+    audioText: '오늘 좀 피곤해요.',
+    tts: '오늘 좀 피곤해요.',
+    promptLabel: '写下你听到的韩语'
+  },
+  {
+    id: 'ko-listen-004',
+    deck: '韩语',
+    category: '听力 / 听写',
+    question: '听音频，写下你听到的韩语。',
+    answer: '한국어를 배우고 싶어요.\n意思：我想学韩语。',
+    audioText: '한국어를 배우고 싶어요.',
+    tts: '한국어를 배우고 싶어요.',
+    promptLabel: '写下你听到的韩语'
+  }
+];
+
+export const cards = [
+  ...mobileCards.map(card => ({ domain: 'phone', ...card })),
+  ...koreanCards.map(card => ({ domain: 'korean', ...card })),
 ];
