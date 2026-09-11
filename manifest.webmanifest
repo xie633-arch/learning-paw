@@ -1,7 +1,7 @@
 {
   "name": "Personal Learning OS",
   "short_name": "Learning",
-  "description": "先主动回忆，再自我判断认识、模糊或不认识的个人学习工具。",
+  "description": "手机产品知识、韩语等多领域的主动回忆与间隔复习工具。",
   "lang": "zh-CN",
   "start_url": "./",
   "scope": "./",
