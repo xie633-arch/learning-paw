@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Learning" />
-  <title>Learning｜主动回忆</title>
+  <title>Learning OS｜主动学习</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./icon.svg" />
@@ -26,18 +26,42 @@
     <main>
       <section id="homeView" class="view">
         <div class="hero card">
-          <p class="muted">今天的目标不是刷分，而是把“好像知道”变成“真的能说出来”。</p>
+          <p id="homeLead" class="muted">今天的目标不是刷分，而是把“好像知道”变成“真的能说出来”。</p>
           <div class="stats-grid">
-            <div><strong id="dueCount">0</strong><span>今日到期</span></div>
+            <div><strong id="dueCount">0</strong><span>当前领域到期</span></div>
             <div><strong id="reviewedToday">0</strong><span>今日已复习</span></div>
             <div><strong id="knownToday">0</strong><span>今日认识</span></div>
           </div>
         </div>
 
-        <div class="card controls-card">
-          <label for="deckSelect">学习领域</label>
-          <select id="deckSelect"></select>
+        <section class="card domain-card-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">LEARNING DOMAINS</p>
+              <h2>选择学习领域</h2>
+            </div>
+            <span class="muted small">共用记忆引擎，不同训练方式</span>
+          </div>
+          <div id="domainGrid" class="domain-grid"></div>
+        </section>
 
+        <section class="card current-domain-card">
+          <div class="domain-detail-top">
+            <div class="domain-title-wrap">
+              <span id="domainIcon" class="domain-big-icon">📱</span>
+              <div>
+                <div class="domain-name-row">
+                  <h2 id="domainName">手机产品专家</h2>
+                  <span id="domainStatusBadge" class="status-badge">可学习</span>
+                </div>
+                <p id="domainDescription" class="muted"></p>
+              </div>
+            </div>
+          </div>
+          <div id="domainModes" class="mode-grid"></div>
+        </section>
+
+        <section class="card controls-card">
           <label for="sessionSize">本次题量</label>
           <select id="sessionSize">
             <option value="5">5 题｜闪电复习</option>
@@ -47,12 +71,23 @@
           </select>
 
           <button id="startBtn" class="primary">开始复习</button>
-          <p id="emptyHint" class="muted small hidden">当前没有到期卡片。可以切换领域，或稍后再来。</p>
-        </div>
+          <p id="emptyHint" class="muted small hidden"></p>
+        </section>
+
+        <section id="koreanNotice" class="card korean-notice hidden">
+          <div class="notice-title-row">
+            <span class="notice-icon">🎙️</span>
+            <div>
+              <p class="eyebrow">KOREAN VOICE ROADMAP</p>
+              <h2>AI 语音对话是核心模块</h2>
+            </div>
+          </div>
+          <p class="muted">当前版本先把主动表达、听力和跟读链路跑通。AI 连续情景对话、发音识别与纠正会作为韩语模块的下一阶段核心能力接入，不会被降级成附加功能。</p>
+        </section>
 
         <div class="card explanation-card">
-          <h2>这一版怎么用</h2>
-          <p>先写下自己的回答，再查看参考答案。系统不会替你判分，只记录你的自评：</p>
+          <h2>共同学习逻辑</h2>
+          <p>先主动输出，再看参考答案。系统不替你判“会不会”，只记录你的自评并安排下一次复习：</p>
           <div class="legend">
             <span>✅ 认识</span>
             <span>🟡 模糊</span>
@@ -76,7 +111,9 @@
           <img id="questionImage" class="question-image hidden" alt="题目图片" />
           <h2 id="questionText" class="question"></h2>
 
-          <label for="selfAnswer" class="answer-label">先写下你的理解</label>
+          <button id="audioPromptBtn" class="audio-action hidden" type="button">🔊 播放韩语</button>
+
+          <label id="answerLabel" for="selfAnswer" class="answer-label">先写下你的理解</label>
           <textarea id="selfAnswer" rows="6" placeholder="不用追求完整，先把你真正能回忆出来的内容写下来……"></textarea>
           <p class="muted small">你的输入不会被 AI 判分，只用于帮助主动回忆。</p>
 
@@ -86,6 +123,7 @@
             <div class="divider"></div>
             <p class="reference-title">参考答案</p>
             <div id="referenceAnswer" class="reference-answer"></div>
+            <button id="speakAnswerBtn" class="audio-action secondary-audio hidden" type="button">🔊 听参考答案</button>
 
             <p class="self-rate-title">这次掌握得怎么样？</p>
             <div class="rating-grid">
@@ -114,7 +152,7 @@
 
     <footer>
       <span id="networkState">在线</span>
-      <span>数据默认保存在当前设备</span>
+      <span>学习记录默认保存在当前设备</span>
     </footer>
   </div>
 
