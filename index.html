@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Learning" />
-  <title>Learning OS｜主动学习</title>
+  <title>Learning OS｜个人学习平台</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./icon.svg" />
@@ -25,14 +25,14 @@
 
     <main>
       <section id="homeView" class="view">
-        <div class="hero card">
+        <section class="hero card">
           <p id="homeLead" class="muted">今天的目标不是刷分，而是把“好像知道”变成“真的能说出来”。</p>
           <div class="stats-grid">
             <div><strong id="dueCount">0</strong><span>当前领域到期</span></div>
             <div><strong id="reviewedToday">0</strong><span>今日已复习</span></div>
             <div><strong id="knownToday">0</strong><span>今日认识</span></div>
           </div>
-        </div>
+        </section>
 
         <section class="card domain-card-shell">
           <div class="section-heading">
@@ -40,60 +40,132 @@
               <p class="eyebrow">LEARNING DOMAINS</p>
               <h2>选择学习领域</h2>
             </div>
-            <span class="muted small">共用记忆引擎，不同训练方式</span>
+            <span class="muted small">共用学习引擎，不同训练方式</span>
           </div>
           <div id="domainGrid" class="domain-grid"></div>
         </section>
 
+        <section id="todayLearningCard" class="card focus-card">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">TODAY</p>
+              <h2>今日学习</h2>
+            </div>
+            <span id="todayProgressText" class="status-badge">0 / 0</span>
+          </div>
+          <h3 id="todayLessonTitle" class="focus-title"></h3>
+          <p id="todayLessonSummary" class="muted"></p>
+          <div id="todayLessonChips" class="chip-row"></div>
+          <div id="todayLessonDetails" class="lesson-details hidden"></div>
+          <div class="button-row">
+            <button id="toggleLessonBtn" class="ghost">查看学习任务</button>
+            <button id="completeLessonBtn" class="primary">标记完成</button>
+          </div>
+        </section>
+
         <section class="card current-domain-card">
-          <div class="domain-detail-top">
-            <div class="domain-title-wrap">
-              <span id="domainIcon" class="domain-big-icon">📱</span>
-              <div>
-                <div class="domain-name-row">
-                  <h2 id="domainName">手机产品专家</h2>
-                  <span id="domainStatusBadge" class="status-badge">可学习</span>
-                </div>
-                <p id="domainDescription" class="muted"></p>
+          <div class="domain-title-wrap">
+            <span id="domainIcon" class="domain-big-icon">📱</span>
+            <div>
+              <div class="domain-name-row">
+                <h2 id="domainName">手机产品专家</h2>
+                <span id="domainStatusBadge" class="status-badge">可学习</span>
               </div>
+              <p id="domainDescription" class="muted"></p>
             </div>
           </div>
           <div id="domainModes" class="mode-grid"></div>
         </section>
 
-        <section class="card controls-card">
-          <label for="sessionSize">本次题量</label>
-          <select id="sessionSize">
-            <option value="5">5 题｜闪电复习</option>
-            <option value="10" selected>10 题｜标准训练</option>
-            <option value="20">20 题｜深度复习</option>
-            <option value="all">全部到期</option>
-          </select>
+        <section id="trainingHub" class="card">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">TRAIN</p>
+              <h2>训练中心</h2>
+            </div>
+          </div>
+          <div class="training-actions">
+            <div class="training-panel">
+              <strong>今日复习</strong>
+              <span class="muted small">按 FSRS 到期顺序复习</span>
+              <select id="sessionSize">
+                <option value="5">5 题｜闪电复习</option>
+                <option value="10" selected>10 题｜标准训练</option>
+                <option value="20">20 题｜深度复习</option>
+                <option value="all">全部到期</option>
+              </select>
+              <button id="startBtn" class="primary">开始复习</button>
+              <p id="emptyHint" class="muted small hidden"></p>
+            </div>
+            <div class="training-panel">
+              <strong>正式测试</strong>
+              <span class="muted small">10 题 × 10 分，独立于日常自评</span>
+              <button id="startTestBtn" class="primary secondary-primary">开始 100 分验收</button>
+              <p id="testHint" class="muted small"></p>
+            </div>
+          </div>
+        </section>
 
-          <button id="startBtn" class="primary">开始复习</button>
-          <p id="emptyHint" class="muted small hidden"></p>
+        <section id="weakCard" class="card">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">WEAK SPOTS</p>
+              <h2>薄弱知识</h2>
+            </div>
+            <button id="weakDrillBtn" class="ghost small-button">专项复习</button>
+          </div>
+          <div id="weakList" class="weak-list"></div>
+        </section>
+
+        <section id="routeCard" class="card">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">CURRICULUM</p>
+              <h2 id="routeTitle">学习路线</h2>
+            </div>
+            <span id="routeProgressText" class="muted small"></span>
+          </div>
+          <p id="routeSource" class="muted small"></p>
+          <div id="routeList" class="route-list"></div>
+        </section>
+
+        <section id="visualCard" class="card hidden">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">OFFICIAL VISUAL LIBRARY</p>
+              <h2>官方图识机素材</h2>
+            </div>
+          </div>
+          <p class="muted small">只使用厂商官方产品页。当前先建立官方素材入口，下一步把稳定图片本地化后进入真正的看图识机卡。</p>
+          <div id="visualSourceList" class="visual-source-list"></div>
         </section>
 
         <section id="koreanNotice" class="card korean-notice hidden">
           <div class="notice-title-row">
             <span class="notice-icon">🎙️</span>
             <div>
-              <p class="eyebrow">KOREAN VOICE ROADMAP</p>
-              <h2>AI 语音对话是核心模块</h2>
+              <p class="eyebrow">KOREAN</p>
+              <h2>韩语模块独立迭代中</h2>
             </div>
           </div>
-          <p class="muted">当前版本先把主动表达、听力和跟读链路跑通。AI 连续情景对话、发音识别与纠正会作为韩语模块的下一阶段核心能力接入，不会被降级成附加功能。</p>
+          <p class="muted">本轮不改韩语模块，继续保留现有主动表达、听力与 TTS 功能；后续在独立聊天里继续完善语音对话与发音训练。</p>
         </section>
 
-        <div class="card explanation-card">
-          <h2>共同学习逻辑</h2>
-          <p>先主动输出，再看参考答案。系统不替你判“会不会”，只记录你的自评并安排下一次复习：</p>
-          <div class="legend">
-            <span>✅ 认识</span>
-            <span>🟡 模糊</span>
-            <span>❌ 不认识</span>
+        <section class="card">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">MY LEARNING</p>
+              <h2>学习数据与备份</h2>
+            </div>
           </div>
-        </div>
+          <p class="muted small">当前进度仍保存在本设备。先提供手动导出 / 导入，避免换设备或清理浏览器后丢失记录。</p>
+          <div class="button-row">
+            <button id="exportBtn" class="ghost">导出学习数据</button>
+            <button id="importBtn" class="ghost">导入学习数据</button>
+            <input id="importInput" class="hidden" type="file" accept="application/json,.json" />
+          </div>
+          <p id="lastTestResult" class="muted small"></p>
+        </section>
       </section>
 
       <section id="reviewView" class="view hidden">
@@ -110,13 +182,10 @@
           </div>
           <img id="questionImage" class="question-image hidden" alt="题目图片" />
           <h2 id="questionText" class="question"></h2>
-
           <button id="audioPromptBtn" class="audio-action hidden" type="button">🔊 播放韩语</button>
-
           <label id="answerLabel" for="selfAnswer" class="answer-label">先写下你的理解</label>
           <textarea id="selfAnswer" rows="6" placeholder="不用追求完整，先把你真正能回忆出来的内容写下来……"></textarea>
           <p class="muted small">你的输入不会被 AI 判分，只用于帮助主动回忆。</p>
-
           <button id="revealBtn" class="primary">查看参考答案</button>
 
           <div id="referenceBlock" class="reference hidden">
@@ -124,7 +193,6 @@
             <p class="reference-title">参考答案</p>
             <div id="referenceAnswer" class="reference-answer"></div>
             <button id="speakAnswerBtn" class="audio-action secondary-audio hidden" type="button">🔊 听参考答案</button>
-
             <p class="self-rate-title">这次掌握得怎么样？</p>
             <div class="rating-grid">
               <button data-rating="good" class="rating good">✅<strong>认识</strong><span>能独立说出来</span></button>
@@ -133,6 +201,33 @@
             </div>
           </div>
         </article>
+      </section>
+
+      <section id="testView" class="view hidden">
+        <div class="review-topline">
+          <button id="exitTestBtn" class="ghost">退出测试</button>
+          <span id="testProgressText">1 / 10</span>
+        </div>
+        <div class="progress-track"><div id="testProgressBar" class="progress-bar"></div></div>
+        <article class="card test-card">
+          <p class="eyebrow">FORMAL TEST</p>
+          <h2 id="testTitle"></h2>
+          <p id="testQuestion" class="question"></p>
+          <div id="testOptions" class="test-options"></div>
+          <div id="testFeedback" class="test-feedback hidden"></div>
+          <button id="nextTestBtn" class="primary hidden">下一题</button>
+        </article>
+      </section>
+
+      <section id="testResultView" class="view hidden">
+        <div class="card summary-card">
+          <p class="eyebrow">TEST COMPLETE</p>
+          <h2>正式验收完成</h2>
+          <div class="score-ring"><strong id="testScore">0</strong><span>/ 100</span></div>
+          <p id="testResultMessage" class="muted"></p>
+          <div id="testResultBreakdown" class="result-breakdown"></div>
+          <button id="testBackHomeBtn" class="primary">返回首页</button>
+        </div>
       </section>
 
       <section id="summaryView" class="view hidden">
