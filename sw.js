@@ -1,10 +1,11 @@
-const CACHE_NAME = 'learning-pwa-v0.2.0';
+const CACHE_NAME = 'learning-pwa-v0.3.0';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './cards.js',
+  './platform-data.js',
   './manifest.webmanifest',
   './icon.svg',
 ];
@@ -27,7 +28,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-
   const url = new URL(event.request.url);
 
   if (event.request.mode === 'navigate') {
@@ -46,16 +46,14 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
-
-      return fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          const cacheable = url.origin === self.location.origin || url.hostname === 'cdn.jsdelivr.net';
-          if (cacheable && response.ok) {
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          }
-          return response;
-        });
+      return fetch(event.request).then(response => {
+        const copy = response.clone();
+        const cacheable = url.origin === self.location.origin || url.hostname === 'cdn.jsdelivr.net';
+        if (cacheable && response.ok) {
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        }
+        return response;
+      });
     })
   );
 });
