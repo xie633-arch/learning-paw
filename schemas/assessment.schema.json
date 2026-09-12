@@ -2,29 +2,82 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://xie633-arch.github.io/learning-paw/schemas/assessment.schema.json",
   "title": "Learning OS Assessment Schema v1",
+  "description": "Aligned with Obsidian 10_Data_Schema/04_Assessment_Schema_v1.md. Learning Mode and Exam Mode are separate.",
   "type": "object",
-  "required": ["title", "description", "questions"],
+  "required": ["schema_version", "assessment_id", "name", "domain", "purpose", "mode", "scoring", "max_score"],
   "properties": {
     "schema_version": { "const": "1.0" },
-    "title": { "type": "string" },
-    "description": { "type": "string" },
-    "questions": {
+    "assessment_id": { "type": "string" },
+    "name": { "type": "string" },
+    "domain": { "type": "string" },
+    "purpose": { "type": "string", "enum": ["baseline", "weekly_check", "milestone", "mock_exam", "certification_style", "diagnostic"] },
+    "mode": { "type": "string" },
+    "scoring": { "type": "string" },
+    "time_limit_minutes": { "type": ["number", "null"], "minimum": 0 },
+    "max_score": { "type": "number", "minimum": 0 },
+    "sections": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["skill", "difficulty", "q", "options", "answer", "explanation"],
+        "required": ["id", "skill", "max_score"],
         "properties": {
+          "id": { "type": "string" },
           "skill": { "type": "string" },
-          "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
-          "q": { "type": "string" },
-          "options": { "type": "array", "minItems": 2, "items": { "type": "string" } },
-          "answer": { "type": "integer", "minimum": 0 },
-          "explanation": { "type": "string" },
-          "source_url": { "type": ["string", "null"] }
+          "max_score": { "type": "number", "minimum": 0 }
         },
         "additionalProperties": true
       }
+    },
+    "questions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Item" }
+    },
+    "exam_family": { "type": ["string", "null"] },
+    "exam_mode": { "type": ["string", "null"] },
+    "score_scale": { "type": ["number", "null"] },
+    "level_thresholds": { "type": ["object", "null"] }
+  },
+  "$defs": {
+    "Item": {
+      "type": "object",
+      "required": ["schema_version", "item_id", "assessment_id", "section_id", "item_type", "prompt", "max_score", "source_id"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "item_id": { "type": "string" },
+        "assessment_id": { "type": "string" },
+        "section_id": { "type": "string" },
+        "concept_ids": { "type": "array", "items": { "type": "string" } },
+        "skill": { "type": ["string", "null"] },
+        "difficulty": { "type": ["number", "string", "null"] },
+        "item_type": {
+          "type": "string",
+          "enum": ["multiple_choice", "short_answer", "dictation", "reading_response", "sentence_production", "writing", "oral_response", "pronunciation_reading", "scenario_response"]
+        },
+        "prompt": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correct_answer": { "type": ["integer", "string", "array", "object", "null"] },
+        "max_score": { "type": "number", "minimum": 0 },
+        "source_id": { "type": "string" },
+        "rubric": { "type": ["object", "null"] },
+        "explanation": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "Attempt": {
+      "type": "object",
+      "required": ["attempt_id", "assessment_id", "started_at", "score", "max_score", "schema_version"],
+      "properties": {
+        "attempt_id": { "type": "string" },
+        "assessment_id": { "type": "string" },
+        "started_at": { "type": "string" },
+        "completed_at": { "type": ["string", "null"] },
+        "score": { "type": "number" },
+        "max_score": { "type": "number" },
+        "section_scores": { "type": "object" },
+        "item_results": { "type": "array" },
+        "schema_version": { "const": "1.0" }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": true
