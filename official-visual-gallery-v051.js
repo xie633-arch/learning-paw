@@ -14,6 +14,20 @@ const officialVisuals = [
     focus: 'Pura 系列影像与设计语言、机身配色和后摄辨识',
   },
   {
+    name: 'HUAWEI nova 16',
+    local: './assets/official/nova16_official_hero.png',
+    remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/nova16/list/blue.png',
+    source: 'https://consumer.huawei.com/cn/phones/nova16/',
+    focus: 'nova 系列年轻化设计、人像与潮流产品线识别',
+  },
+  {
+    name: 'HUAWEI 畅享 90',
+    local: './assets/official/changxiang90_official_hero.png',
+    remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/changxiang-90/list/black.png',
+    source: 'https://consumer.huawei.com/cn/phones/changxiang-90/',
+    focus: '畅享系列大众产品定位、外观与基础产品线识别',
+  },
+  {
     name: 'HUAWEI Mate X7',
     local: './assets/official/matex7_official_hero.png',
     remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate-x7/list/white.png',
@@ -69,7 +83,7 @@ function buildGallery() {
 
   const note = document.createElement('p');
   note.className = 'official-visual-note';
-  note.textContent = '以下均为华为官网已核验产品图，不使用 AI 生成外观。图片自动落库完成后优先读取本地 assets，外链仅作兜底。';
+  note.textContent = '覆盖 Mate、Pura、nova、畅享与折叠五类产品线。以下均为华为官网已核验产品图，不使用 AI 生成外观；优先读取本地 assets，官网 CDN 仅作兜底。';
   list.append(note);
 
   const grid = document.createElement('div');
