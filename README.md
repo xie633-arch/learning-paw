@@ -73,19 +73,43 @@ ChatGPT App Voice
 Error Bank / 后续复习
 ```
 
-Learning Paw 后续只需要增加“今日 ChatGPT Voice Task、复制提示词、完成练习、记录关键问题”等轻量接口，不开发自建麦克风、STT、实时 Voice API 或虚假的精确发音分数。
+Learning Paw 只需要提供“今日 ChatGPT Voice Task、复制提示词、完成练习、记录关键问题”等轻量接口，不开发自建麦克风、STT、实时 Voice API 或虚假的精确发音分数。
 
 发音标准参照仍优先使用真人母语或高质量权威音源；浏览器 TTS 只作为快速辅助。
 
-### 4. 正式测试
+### 4. StudyEvent v1 学习事实层
+
+`learner-data-v1.js` 已作为兼容层在 `app.js` 读取本地数据之前运行，把当前原型数据逐步提升为正式学习事实：
+
+```text
+legacy history
+→ StudyEvent v1
+
+legacy testResults
+→ Assessment Attempt
+→ item StudyEvent
+
+again / 正式测试答错
+→ ErrorRecord
+
+StudyEvent
+→ concept_id × skill Learner Signal
+→ introduced_content 初始事实
+```
+
+当前仍保留旧 `history / testResults` 供 V0.4 页面兼容使用，但导出的备份已经带 `studyEvents / assessmentAttempts / errorRecords / learnerSignals / introducedContent`。因此旧页面无需重做，长期数据结构已经开始迁移。
+
+日常 `认识 / 模糊 / 不认识` 仍然只是自评，不会被写成客观 `correct`；正式测试的客观对错、分数和自评数据保持分离。
+
+### 5. 正式测试
 
 日常 `认识 / 模糊 / 不认识` 与正式测试严格分开。
 
-当前手机、商圈零售、行业商业已有 100 分验收；韩语 Week 1 / Month 1 Assessment 仍待按独立 Assessment Schema 完成。
+当前手机、商圈零售、行业商业已有 100 分验收；正式测试结果会兼容生成 Assessment Attempt 与逐题 StudyEvent。韩语 Day 0 / Week 1 / Month 1 Assessment 仍待按独立 Assessment Schema 完成。
 
-### 5. 数据备份
+### 6. 数据备份
 
-支持 JSON 学习数据导出 / 导入，用于自动跨设备同步完成前的备份与迁移。
+支持 JSON 学习数据导出 / 导入，用于自动跨设备同步完成前的备份与迁移。导出时以经过 StudyEvent v1 兼容层补全后的本地状态为准。
 
 ## 学习底层原则
 
@@ -111,10 +135,13 @@ Learning Paw 后续只需要增加“今日 ChatGPT Voice Task、复制提示词
 - 到期复习、学习历史与当日统计；
 - 薄弱类别识别与专项训练；
 - 独立正式测试；
+- StudyEvent v1 兼容迁移；
+- Assessment Attempt / ErrorRecord / Learner Signal 基础层；
 - JSON 学习数据导出 / 导入；
 - 商圈空间 SVG 训练；
 - 行业公开事实证据题；
-- GitHub Pages 自动部署。
+- GitHub Pages 自动部署；
+- Static QA 自动检查 JavaScript、JSON 与 Service Worker Shell 引用。
 
 ## 数据与隐私
 
@@ -127,13 +154,14 @@ Learning Paw 后续只需要增加“今日 ChatGPT Voice Task、复制提示词
 
 不会把私有 Obsidian Vault、工作日报、内部资料或私人学习记录直接发布到这里。
 
-当前学习数据仍保存在浏览器 `localStorage`：
+当前私人学习数据仍保存在浏览器 `localStorage`：
 
 - iPhone 与 Mac 暂不自动同步；
 - 可以手动导出 / 导入备份；
-- 清除浏览器网站数据前应先导出备份。
+- 清除浏览器网站数据前应先导出备份；
+- `StudyEvent / Assessment Attempt / ErrorRecord` 只存在用户设备或用户自己导出的备份里，不写入公开仓库。
 
-## 部署
+## 部署与 QA
 
 GitHub Pages：
 
@@ -141,20 +169,26 @@ https://xie633-arch.github.io/learning-paw/
 
 `main` 分支更新后通过 GitHub Actions 自动重新发布。
 
+`.github/workflows/static-qa.yml` 会额外检查：
+
+- 所有 JavaScript 语法；
+- JSON / Web Manifest 语法；
+- Service Worker `APP_SHELL` 中引用的本地文件是否真实存在。
+
 ## 当前仍未完成的关键项
 
 这些属于“从成熟原型进入长期正式系统”的剩余工作，而不是缺少页面：
 
 1. Day 0 真正 Baseline Assessment；
 2. 韩语 Week 1 / Month 1 正式 Assessment；
-3. `history` → StudyEvent v1；
-4. Test Result → Assessment Attempt，并逐题产生 StudyEvent；
-5. Error Bank 与 `concept_id × skill` Learner Model；
-6. 正式 `introduced_content` Learner State，替代当前通过 lessonProgress 推导的兼容层；
-7. Today Plan 真正合并“当前 Lesson 新卡 + FSRS Due + 薄弱项”；
+3. 让页面本身直接以 StudyEvent / Assessment Attempt 为数据源，逐步停止依赖兼容用 `history / testResults`；
+4. Error Bank 的解决 / 回炉 / 验证闭环；
+5. 基于 `concept_id × skill` Learner Signal 形成真正的弱项推荐，而不只按 category；
+6. 正式 `introduced_content` Learner State 完全替代当前 lessonProgress 推导的兼容层；
+7. Today Plan 真正合并“当前 Lesson 新卡 + FSRS Due + Learner Model 弱项”；
 8. 手机官方真实产品图片本地化与看图识机；
 9. 行业证据来源在界面中直接可见；
 10. IndexedDB / 云端跨设备同步；
 11. iOS / Android 更完整的 PWA 图标与安装体验 QA。
 
-当前版本定位：**已经可实际学习的 V0.4 成熟原型，但还不是“长期数据层全部完成”的 1.0 产品。**
+当前版本定位：**已经可实际学习的 V0.4 成熟原型；StudyEvent v1 长期数据迁移已经启动，但 1.0 仍需要完成原生数据消费、Error Bank 闭环和长期存储。**
