@@ -14,6 +14,10 @@ await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
 await import('./v04-boot.js');
 await import('./v04-schema-align.js');
+
+// Migrate legacy history/test results into StudyEvent v1 + Assessment Attempt
+// before app.js reads localStorage, while keeping the current UI backward-compatible.
+await import('./learner-data-v1.js');
 await import('./app.js');
 await import('./korean-voice-ui-v04.js');
 
