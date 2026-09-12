@@ -2,28 +2,37 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://xie633-arch.github.io/learning-paw/schemas/study-event.schema.json",
   "title": "Learning OS StudyEvent Schema v1",
+  "description": "Aligned with Obsidian 10_Data_Schema/03_StudyEvent_Schema_v1.md. StudyEvent is the immutable learning fact source.",
   "type": "object",
-  "required": ["id", "event_type", "domain", "occurred_at"],
+  "required": ["schema_version", "event_id", "occurred_at", "domain", "event_type", "result", "source"],
   "properties": {
     "schema_version": { "const": "1.0" },
-    "id": { "type": "string" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "occurred_at": { "type": "string" },
+    "domain": { "type": "string" },
     "event_type": {
       "type": "string",
-      "enum": ["lesson_complete", "review", "weak_drill", "assessment_answer", "assessment_complete", "import", "export"]
+      "enum": ["lesson_started", "lesson_completed", "practice_attempt", "review_rating", "listening_attempt", "pronunciation_attempt", "conversation_session", "writing_submission", "assessment_attempt", "assessment_completed", "error_created", "error_resolved", "curriculum_status_changed", "manual_note"]
     },
-    "domain": { "type": "string", "enum": ["phone", "korean", "retail", "industry"] },
-    "concept_id": { "type": ["string", "null"] },
     "content_id": { "type": ["string", "null"] },
+    "concept_id": { "type": ["string", "null"] },
     "skill": { "type": ["string", "null"] },
-    "mode": { "type": ["string", "null"] },
-    "response": { "type": ["string", "null"] },
-    "self_rating": { "type": ["string", "null"], "enum": ["good", "hard", "again", null] },
-    "objective_result": { "type": ["boolean", "null"] },
+    "result": {
+      "type": "object",
+      "properties": {
+        "rating": { "type": ["string", "null"], "enum": ["good", "hard", "again", null] },
+        "correct": { "type": ["boolean", "null"] },
+        "score": { "type": ["number", "null"] },
+        "max_score": { "type": ["number", "null"] },
+        "confidence": { "type": ["number", "string", "null"] }
+      },
+      "additionalProperties": true
+    },
     "duration_ms": { "type": ["number", "null"], "minimum": 0 },
-    "occurred_at": { "type": "string" },
-    "device": { "type": ["string", "null"] },
-    "engine": { "type": ["string", "null"] },
-    "algorithm_version": { "type": ["string", "null"] }
+    "session_id": { "type": ["string", "null"] },
+    "source": { "type": "string" },
+    "device_id": { "type": ["string", "null"] },
+    "algorithm": { "type": ["string", "null"] }
   },
   "additionalProperties": true
 }
