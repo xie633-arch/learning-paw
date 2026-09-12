@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xie633-arch.github.io/learning-paw/schemas/assessment.schema.json",
+  "title": "Learning OS Assessment Schema v1",
+  "type": "object",
+  "required": ["title", "description", "questions"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["skill", "difficulty", "q", "options", "answer", "explanation"],
+        "properties": {
+          "skill": { "type": "string" },
+          "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "q": { "type": "string" },
+          "options": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+          "answer": { "type": "integer", "minimum": 0 },
+          "explanation": { "type": "string" },
+          "source_url": { "type": ["string", "null"] }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
