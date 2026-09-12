@@ -31,6 +31,7 @@ await import('./learning-ui-v05.js');
 await import('./korean-learning-ui-v05.js');
 await import('./mobile-domain-grid-v051.js');
 await import('./official-visual-gallery-v051.js');
+await import('./lesson-official-visuals-v052.js');
 
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
