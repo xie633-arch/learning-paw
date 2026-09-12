@@ -22,6 +22,9 @@ await import('./learner-data-v1.js');
 await import('./app.js');
 await import('./korean-voice-ui-v04.js');
 
+// V0.5 mobile information architecture + built-in lesson reading content.
+await import('./learning-ui-v05.js');
+
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
   if (domainName?.textContent?.trim() !== '韩语') return;
