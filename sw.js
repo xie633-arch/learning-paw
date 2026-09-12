@@ -1,4 +1,4 @@
-const CACHE_NAME = 'learning-pwa-v0.4.8';
+const CACHE_NAME = 'learning-pwa-v0.5.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -12,6 +12,8 @@ const APP_SHELL = [
   './v04-boot.js',
   './v04-schema-align.js',
   './learner-data-v1.js',
+  './lesson-content-v05.js',
+  './learning-ui-v05.js',
   './app.js',
   './cards.js',
   './platform-data.js',
