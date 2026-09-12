@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">虚拟商圈空间训练案例</title>
+  <desc id="desc">用于商圈与零售学习的虚拟空间图，包含地铁、购物中心、办公区、住宅区、竞品门店、目标门店和主要动线。</desc>
+  <rect width="1200" height="760" fill="#f6f7f9"/>
+  <text x="60" y="70" font-family="sans-serif" font-size="34" font-weight="700" fill="#111827">虚拟商圈空间训练｜Case 01</text>
+  <text x="60" y="108" font-family="sans-serif" font-size="20" fill="#6b7280">不是现实地图：训练目标是识别客流来源、锚点、竞品截流与门店可达性</text>
+
+  <rect x="60" y="160" width="1080" height="520" rx="30" fill="#ffffff" stroke="#d1d5db" stroke-width="3"/>
+
+  <rect x="95" y="210" width="225" height="150" rx="22" fill="#eef2ff" stroke="#9ca3af" stroke-width="2"/>
+  <text x="207" y="267" text-anchor="middle" font-family="sans-serif" font-size="25" font-weight="700" fill="#111827">地铁站</text>
+  <text x="207" y="305" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#6b7280">换乘 / 通勤客流</text>
+
+  <rect x="405" y="185" width="390" height="305" rx="26" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+  <text x="600" y="225" text-anchor="middle" font-family="sans-serif" font-size="28" font-weight="700" fill="#111827">购物中心</text>
+  <rect x="445" y="270" width="145" height="90" rx="16" fill="#fff7ed" stroke="#9ca3af" stroke-width="2"/>
+  <text x="518" y="308" text-anchor="middle" font-family="sans-serif" font-size="19" font-weight="700">竞品门店</text>
+  <text x="518" y="336" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#6b7280">靠主入口</text>
+  <rect x="635" y="365" width="125" height="82" rx="16" fill="#ecfdf5" stroke="#111827" stroke-width="3"/>
+  <text x="697" y="400" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="700">目标门店</text>
+  <text x="697" y="426" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#6b7280">同层更深处</text>
+  <text x="600" y="468" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#6b7280">餐饮 / 零售 / 影院 / 亲子等目的性消费</text>
+
+  <rect x="875" y="205" width="220" height="140" rx="22" fill="#eff6ff" stroke="#9ca3af" stroke-width="2"/>
+  <text x="985" y="260" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="700">办公区</text>
+  <text x="985" y="297" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#6b7280">工作日午间 / 下班</text>
+
+  <rect x="850" y="510" width="245" height="125" rx="22" fill="#fdf2f8" stroke="#9ca3af" stroke-width="2"/>
+  <text x="972" y="558" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="700">住宅社区</text>
+  <text x="972" y="594" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#6b7280">晚间 / 周末家庭客流</text>
+
+  <rect x="105" y="505" width="210" height="125" rx="22" fill="#fefce8" stroke="#9ca3af" stroke-width="2"/>
+  <text x="210" y="553" text-anchor="middle" font-family="sans-serif" font-size="23" font-weight="700">文旅地标</text>
+  <text x="210" y="590" text-anchor="middle" font-family="sans-serif" font-size="17" fill="#6b7280">周末 / 节假日波动</text>
+
+  <path d="M320 285 C365 285, 390 285, 430 305" fill="none" stroke="#111827" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 10"/>
+  <path d="M590 315 C635 315, 670 335, 690 365" fill="none" stroke="#111827" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 10"/>
+  <path d="M875 280 C820 300, 790 330, 750 380" fill="none" stroke="#6b7280" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 10"/>
+  <path d="M860 560 C805 540, 765 490, 725 445" fill="none" stroke="#6b7280" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 10"/>
+  <path d="M315 565 C390 540, 475 510, 620 440" fill="none" stroke="#6b7280" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 10"/>
+
+  <circle cx="429" cy="305" r="7" fill="#111827"/>
+  <text x="345" y="255" font-family="sans-serif" font-size="17" fill="#6b7280">主入口动线</text>
+  <text x="60" y="725" font-family="sans-serif" font-size="16" fill="#6b7280">训练提示：不要只看直线距离。继续问“谁从哪里来、为什么来、什么时候来、先看到谁、是否愿意绕行”。</text>
+</svg>
