@@ -1,0 +1,97 @@
+name: Localize official visual assets
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.visual-assets.json"
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Path to one *.visual-assets.json file"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: official-visual-assets-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  localize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve manifests
+        id: manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            printf '%s\n' "${{ inputs.manifest_path }}" > /tmp/visual_manifests.txt
+          else
+            python3 - <<'PY' > /tmp/visual_manifests.txt
+          import json, os
+          with open(os.environ["GITHUB_EVENT_PATH"], "r", encoding="utf-8") as f:
+              event = json.load(f)
+          paths = set()
+          entries = list(event.get("commits", []) or [])
+          head = event.get("head_commit") or {}
+          if head:
+              entries.append(head)
+          for commit in entries:
+              for key in ("added", "modified"):
+                  for path in commit.get(key, []) or []:
+                      if path.endswith(".visual-assets.json"):
+                          paths.add(path)
+          for path in sorted(paths):
+              print(path)
+          PY
+            if [[ ! -s /tmp/visual_manifests.txt ]]; then
+              find . -type f -name '*.visual-assets.json' -print | sed 's#^./##' | sort -u > /tmp/visual_manifests.txt
+            fi
+          fi
+          cat /tmp/visual_manifests.txt || true
+          if [[ ! -s /tmp/visual_manifests.txt ]]; then
+            echo "has_manifests=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_manifests=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Discover or download assets
+        if: steps.manifests.outputs.has_manifests == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r manifest; do
+            [[ -z "$manifest" ]] && continue
+            echo "=== Processing: $manifest ==="
+            python3 scripts/fetch_visual_assets.py "$manifest" --vault-root .
+          done < /tmp/visual_manifests.txt
+
+      - name: Commit localized assets
+        if: steps.manifests.outputs.has_manifests == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No generated asset changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(visual): localize official product images"
+          git push
