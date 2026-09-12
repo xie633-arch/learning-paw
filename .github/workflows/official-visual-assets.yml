@@ -27,7 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 8
+          fetch-depth: 20
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -94,5 +94,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(visual): localize official product images"
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+          # The learning repository can be edited by another active chat at the same time.
+          # Rebase and retry rather than losing verified downloaded assets to a race.
+          for attempt in 1 2 3 4 5 6; do
+            echo "Push attempt $attempt"
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "Unable to push localized assets after retries." >&2
+          exit 1
