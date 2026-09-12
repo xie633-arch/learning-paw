@@ -2,32 +2,83 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://xie633-arch.github.io/learning-paw/schemas/curriculum.schema.json",
   "title": "Learning OS Curriculum Schema v1",
-  "type": "object",
-  "required": ["title", "steps"],
-  "properties": {
-    "schema_version": { "const": "1.0" },
-    "title": { "type": "string" },
-    "source": { "type": "string" },
-    "steps": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["id", "title", "summary", "task", "output", "order", "objective", "prerequisite"],
-        "properties": {
-          "schema_version": { "const": "1.0" },
-          "id": { "type": "string" },
-          "order": { "type": "integer", "minimum": 1 },
-          "title": { "type": "string" },
-          "summary": { "type": "string" },
-          "objective": { "type": "string" },
-          "keyPoints": { "type": "array", "items": { "type": "string" } },
-          "task": { "type": "string" },
-          "output": { "type": "string" },
-          "prerequisite": { "type": "array", "items": { "type": "string" } }
+  "description": "Aligned with Obsidian 10_Data_Schema/02_Curriculum_Schema_v1.md.",
+  "oneOf": [
+    { "$ref": "#/$defs/Program" },
+    { "$ref": "#/$defs/Phase" },
+    { "$ref": "#/$defs/Lesson" },
+    { "$ref": "#/$defs/Activity" }
+  ],
+  "$defs": {
+    "Program": {
+      "type": "object",
+      "required": ["schema_version", "program_id", "name", "domain", "goal", "status"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "program_id": { "type": "string" },
+        "name": { "type": "string" },
+        "domain": { "type": "string" },
+        "goal": { "type": "object" },
+        "start_date": { "type": ["string", "null"] },
+        "status": { "type": "string", "enum": ["active", "draft", "completed", "paused"] }
+      },
+      "additionalProperties": true
+    },
+    "Phase": {
+      "type": "object",
+      "required": ["schema_version", "phase_id", "program_id", "order", "title", "objectives"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "phase_id": { "type": "string" },
+        "program_id": { "type": "string" },
+        "order": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string" },
+        "start_day": { "type": ["integer", "null"] },
+        "end_day": { "type": ["integer", "null"] },
+        "objectives": { "type": "array", "items": { "type": "string" } },
+        "exit_criteria": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "Lesson": {
+      "type": "object",
+      "required": ["schema_version", "lesson_id", "phase_id", "day_index", "title", "objectives", "review_policy"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "lesson_id": { "type": "string" },
+        "phase_id": { "type": "string" },
+        "day_index": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string" },
+        "estimated_minutes": {
+          "type": "object",
+          "properties": {
+            "minimum": { "type": "integer", "minimum": 1 },
+            "standard": { "type": "integer", "minimum": 1 },
+            "intensive": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
         },
-        "additionalProperties": true
-      }
+        "objectives": { "type": "array", "items": { "type": "string" } },
+        "new_concepts": { "type": "array", "items": { "type": "string" } },
+        "review_policy": { "type": "string" },
+        "prerequisites": { "type": "object" },
+        "fallback_lesson": { "type": ["string", "null"] },
+        "activities": { "type": "array", "items": { "$ref": "#/$defs/Activity" } },
+        "exam_alignment": { "type": ["object", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "Activity": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "minutes": { "type": ["integer", "null"], "minimum": 0 },
+        "concepts": { "type": "array", "items": { "type": "string" } },
+        "scenario": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
     }
-  },
-  "additionalProperties": true
+  }
 }
