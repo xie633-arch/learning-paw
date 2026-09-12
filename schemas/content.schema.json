@@ -44,6 +44,8 @@
         "explanation": { "type": ["string", "null"] },
         "difficulty": { "type": ["number", "string"] },
         "estimated_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "lesson_ids": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "introduction_policy": { "type": "string", "enum": ["curriculum_unlock", "direct", "assessment_only", "remediation"] },
         "source_id": { "type": "string" },
         "status": { "type": "string", "enum": ["active", "draft", "deprecated"] },
         "license": { "type": ["string", "null"] }
