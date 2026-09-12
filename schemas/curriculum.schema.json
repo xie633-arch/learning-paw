@@ -47,7 +47,7 @@
         "schema_version": { "const": "1.0" },
         "lesson_id": { "type": "string" },
         "phase_id": { "type": "string" },
-        "day_index": { "type": "integer", "minimum": 1 },
+        "day_index": { "type": "integer", "minimum": 0 },
         "title": { "type": "string" },
         "estimated_minutes": {
           "type": "object",
