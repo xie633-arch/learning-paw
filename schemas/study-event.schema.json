@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xie633-arch.github.io/learning-paw/schemas/study-event.schema.json",
+  "title": "Learning OS StudyEvent Schema v1",
+  "type": "object",
+  "required": ["id", "event_type", "domain", "occurred_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "id": { "type": "string" },
+    "event_type": {
+      "type": "string",
+      "enum": ["lesson_complete", "review", "weak_drill", "assessment_answer", "assessment_complete", "import", "export"]
+    },
+    "domain": { "type": "string", "enum": ["phone", "korean", "retail", "industry"] },
+    "concept_id": { "type": ["string", "null"] },
+    "content_id": { "type": ["string", "null"] },
+    "skill": { "type": ["string", "null"] },
+    "mode": { "type": ["string", "null"] },
+    "response": { "type": ["string", "null"] },
+    "self_rating": { "type": ["string", "null"], "enum": ["good", "hard", "again", null] },
+    "objective_result": { "type": ["boolean", "null"] },
+    "duration_ms": { "type": ["number", "null"], "minimum": 0 },
+    "occurred_at": { "type": "string" },
+    "device": { "type": ["string", "null"] },
+    "engine": { "type": ["string", "null"] },
+    "algorithm_version": { "type": ["string", "null"] }
+  },
+  "additionalProperties": true
+}
