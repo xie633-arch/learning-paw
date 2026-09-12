@@ -1,4 +1,4 @@
-const CACHE_NAME = 'learning-pwa-v0.5.3';
+const CACHE_NAME = 'learning-pwa-v0.5.4';
 const APP_SHELL = [
   './',
   './index.html',
