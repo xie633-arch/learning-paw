@@ -9,7 +9,7 @@ V0.4 的核心链路：
 ## 当前领域
 
 - 📱 **手机产品专家**：硬件、系统串联、参数 → 体验、用户场景、竞品、零售 GTM、上市与经营。
-- 🇰🇷 **韩语**：Day 0–28 Curriculum 已接入；Week 1 已有第一批正式训练卡，并由 Lesson Unlock 控制新卡何时进入学习池；长期目标为 2027 TOPIK II 4级、能力允许冲刺5级。
+- 🇰🇷 **韩语**：Day 0–28 Curriculum 已接入；Week 1 已有第一批正式训练卡，并由 Lesson Unlock 控制新卡首次出现；长期目标为 2027 TOPIK II 4级、能力允许冲刺5级。
 - 🗺️ **商圈与零售**：用户、JTBD、商圈空间、门店、陈列、Demo、O2O、活动与经营诊断。
 - 🌍 **行业与商业**：市场、品牌、产品组合、价格权益、渠道、商业模式、真实市场证据与战略判断。
 
@@ -24,7 +24,7 @@ V0.4 的核心链路：
 - `study-event.schema.json`
 - `assessment.schema.json`
 
-公开 JSON Schema 与私有 Obsidian 中 `80_Learning_PWA/10_Data_Schema/` 的正式定义对齐。
+公开 JSON Schema 与私有 Obsidian 中 `80_Learning_PWA/10_Data_Schema/` 的正式定义保持对齐。Day 0 作为基线索引允许 `day_index = 0`；长期仍计划把 Day 0 从普通课程壳升级成真正的 `purpose: baseline` Assessment。
 
 ### 2. 韩语 Curriculum + Lesson Unlock
 
@@ -37,7 +37,7 @@ V0.4 的核心链路：
 - Week 4：地点、兴趣、愿望、否定与日常表达；
 - Day 28：Month 1 阶段验收接口。
 
-`korean-content-v04.js` 负责 Curriculum 与 Practice 的第一轮真正联动：
+`korean-content-v04.js` 负责 Curriculum 与 Practice 的第一轮联动：
 
 ```text
 未来 Lesson 的新卡
@@ -50,30 +50,38 @@ V0.4 的核心链路：
 → 交给 FSRS 决定何时复习
 ```
 
-当前 Week 1 已加入第一批：
-
-- 韩文音节块；
-- 基础辅音 / 元音；
-- 送气音 / 紧音意识；
-- 复合元音；
-- 韩语键盘；
-- 第一批真实词；
-- 听辨 / 听写；
-- Week 1 验收准备。
+当前 Week 1 已加入第一批韩文音节块、基础辅音/元音、送气音/紧音意识、复合元音、韩语键盘、真实词、听辨/听写与验收准备卡。
 
 旧版韩语生活表达卡也已经按 Curriculum 重新归档，例如问候语在 Day 12 才进入、`-고 싶어요` 在 Day 25 才进入，不再让零基础学习者第一天看到未来内容。
 
-### 3. AI Voice 边界
+### 3. ChatGPT Voice 分工
 
-AI Conversation 与 Pronunciation Lab 已在 Curriculum / Activity 中预留，但当前仍未伪装成完整发音评分能力。
+连续韩语语音对话不在 Learning Paw 里重复自建实时语音系统。
 
-目标是后续把语音对话、跟读、发音问题和 Error Bank 接入同一 StudyEvent 体系。
+正式分工：
+
+```text
+Learning Paw
+课程 / Lesson Unlock / FSRS / 今日语音任务 / 错题与学习记录
+        ↓
+ChatGPT App Voice
+连续韩语对话 / 追问 / 情景陪练 / 适量纠错
+        ↓
+练习结束
+记录 1–3 个高价值错误或表达
+        ↓
+Error Bank / 后续复习
+```
+
+Learning Paw 后续只需要增加“今日 ChatGPT Voice Task、复制提示词、完成练习、记录关键问题”等轻量接口，不开发自建麦克风、STT、实时 Voice API 或虚假的精确发音分数。
+
+发音标准参照仍优先使用真人母语或高质量权威音源；浏览器 TTS 只作为快速辅助。
 
 ### 4. 正式测试
 
 日常 `认识 / 模糊 / 不认识` 与正式测试严格分开。
 
-当前手机、商圈零售、行业商业已有 100 分验收；韩语 Week 1 / Month 1 Assessment 将按独立 Assessment Schema 继续补齐。
+当前手机、商圈零售、行业商业已有 100 分验收；韩语 Week 1 / Month 1 Assessment 仍待按独立 Assessment Schema 完成。
 
 ### 5. 数据备份
 
@@ -87,7 +95,7 @@ AI Conversation 与 Pronunciation Lab 已在 Curriculum / Activity 中预留，�
 4. 日常自评不等于客观考试正确率；
 5. StudyEvent 是学习事实源，熟练度和能力分由历史计算；
 6. Concept 与 Card 分离，同一知识点可被听力、阅读、主动表达、口语等不同方式训练；
-7. AI 是老师和陪练，但不会伪装成绝对准确的发音评分仪。
+7. AI / ChatGPT 是老师和陪练，但不会伪装成绝对准确的发音评分仪。
 
 ## 已有能力
 
@@ -104,6 +112,8 @@ AI Conversation 与 Pronunciation Lab 已在 Curriculum / Activity 中预留，�
 - 薄弱类别识别与专项训练；
 - 独立正式测试；
 - JSON 学习数据导出 / 导入；
+- 商圈空间 SVG 训练；
+- 行业公开事实证据题；
 - GitHub Pages 自动部署。
 
 ## 数据与隐私
@@ -131,13 +141,20 @@ https://xie633-arch.github.io/learning-paw/
 
 `main` 分支更新后通过 GitHub Actions 自动重新发布。
 
-## 下一阶段
+## 当前仍未完成的关键项
 
-1. 把 Lesson Unlock 从当前兼容层升级成正式 `introduced_content` Learner State；
-2. 建韩语 Week 1 Assessment；
-3. 根据真实 Day 1–7 使用结果调整卡片数量和题型，再扩 Day 8–28；
-4. 把旧 `history` 真正迁移成 StudyEvent v1；
-5. 测试历史迁移成 Assessment Attempt，并逐题产生 StudyEvent；
-6. 建 Error Bank 与 `concept_id × skill` Learner Model；
-7. AI Conversation / Pronunciation Lab 接入同一学习事件体系；
-8. 再进入 IndexedDB / 自动跨设备同步。
+这些属于“从成熟原型进入长期正式系统”的剩余工作，而不是缺少页面：
+
+1. Day 0 真正 Baseline Assessment；
+2. 韩语 Week 1 / Month 1 正式 Assessment；
+3. `history` → StudyEvent v1；
+4. Test Result → Assessment Attempt，并逐题产生 StudyEvent；
+5. Error Bank 与 `concept_id × skill` Learner Model；
+6. 正式 `introduced_content` Learner State，替代当前通过 lessonProgress 推导的兼容层；
+7. Today Plan 真正合并“当前 Lesson 新卡 + FSRS Due + 薄弱项”；
+8. 手机官方真实产品图片本地化与看图识机；
+9. 行业证据来源在界面中直接可见；
+10. IndexedDB / 云端跨设备同步；
+11. iOS / Android 更完整的 PWA 图标与安装体验 QA。
+
+当前版本定位：**已经可实际学习的 V0.4 成熟原型，但还不是“长期数据层全部完成”的 1.0 产品。**
