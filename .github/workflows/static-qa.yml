@@ -1,0 +1,79 @@
+name: Static QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.js"
+      - "**/*.json"
+      - "**/*.webmanifest"
+      - "index.html"
+      - ".github/workflows/static-qa.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: static-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do
+            echo "node --check $file"
+            node --check "$file"
+          done < <(find . -type f -name '*.js' -not -path './.git/*' | sort)
+
+      - name: JSON syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          files = sorted(Path('.').rglob('*.json')) + sorted(Path('.').rglob('*.webmanifest'))
+          for path in files:
+              if '.git' in path.parts:
+                  continue
+              print(f'json check {path}')
+              json.loads(path.read_text(encoding='utf-8'))
+          PY
+
+      - name: Service worker shell references
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          text = Path('sw.js').read_text(encoding='utf-8')
+          match = re.search(r'const APP_SHELL = \[(.*?)\];', text, re.S)
+          if not match:
+              raise SystemExit('APP_SHELL not found in sw.js')
+
+          refs = re.findall(r"['\"](\./[^'\"]+)['\"]", match.group(1))
+          missing = []
+          for ref in refs:
+              if ref == './':
+                  continue
+              path = Path(ref[2:])
+              if not path.exists():
+                  missing.append(ref)
+
+          if missing:
+              raise SystemExit('Missing APP_SHELL files: ' + ', '.join(missing))
+          print(f'APP_SHELL OK: {len(refs)} references')
+          PY
