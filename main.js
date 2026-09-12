@@ -12,6 +12,7 @@ koreanSteps.forEach(step => {
 
 await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
+await import('./korean-baseline-v04.js');
 await import('./v04-boot.js');
 await import('./v04-schema-align.js');
 
@@ -27,7 +28,7 @@ const syncKoreanRuntimeCopy = () => {
 
   const lead = document.querySelector('#homeLead');
   if (lead) {
-    lead.textContent = 'Day 0–28 课程已接入：Curriculum 推进新课，FSRS 管理复习；每天提供清晰完整的 ChatGPT Voice Prompt，复制后即可直接语音练习。';
+    lead.textContent = 'Day 0–28 课程已接入：Day 0 先完成真实基线，之后由 Curriculum 解锁新课、FSRS 管理复习；每天提供可直接复制到 ChatGPT Voice 的口语任务。';
   }
 
   const notice = document.querySelector('#koreanNotice');
@@ -35,7 +36,7 @@ const syncKoreanRuntimeCopy = () => {
     const heading = notice.querySelector('h2');
     const body = notice.querySelector('p.muted');
     if (heading) heading.textContent = 'ChatGPT Voice 作为每日口语陪练';
-    if (body) body.textContent = 'Learning Paw 负责每天生成语音任务与完整 Prompt；连续韩语对话、追问和情景陪练直接在 ChatGPT App Voice 中完成。结束后只保留 1–3 个高价值问题。';
+    if (body) body.textContent = 'Learning Paw 负责课程、基线、复习和每日 Voice Prompt；连续韩语对话、追问和情景陪练直接在 ChatGPT App Voice 中完成。结束后只保留 1–3 个高价值问题。';
   }
 };
 
