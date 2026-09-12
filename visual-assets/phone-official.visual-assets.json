@@ -1,0 +1,29 @@
+{
+  "purpose": "Learning Paw official phone visual library",
+  "assets": [
+    {
+      "id": "mate80-hero",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/mate80/",
+      "filename": "mate80_official_hero.webp",
+      "target_dir": "assets/official",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura80-hero",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura80/",
+      "filename": "pura80_official_hero.webp",
+      "target_dir": "assets/official",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "matex7-hero",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/mate-x7/",
+      "filename": "matex7_official_hero.webp",
+      "target_dir": "assets/official",
+      "source_label": "华为官网"
+    }
+  ]
+}
