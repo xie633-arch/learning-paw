@@ -5,7 +5,9 @@
       "id": "mate80-hero",
       "required": true,
       "source_page": "https://consumer.huawei.com/cn/phones/mate80/",
-      "filename": "mate80_official_hero.webp",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80/list/green.png",
+      "referer": "https://consumer.huawei.com/cn/phones/mate80/",
+      "filename": "mate80_official_hero.png",
       "target_dir": "assets/official",
       "source_label": "华为官网"
     },
@@ -13,7 +15,9 @@
       "id": "pura80-hero",
       "required": true,
       "source_page": "https://consumer.huawei.com/cn/phones/pura80/",
-      "filename": "pura80_official_hero.webp",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura80/list/velvet-gold.png",
+      "referer": "https://consumer.huawei.com/cn/phones/pura80/",
+      "filename": "pura80_official_hero.png",
       "target_dir": "assets/official",
       "source_label": "华为官网"
     },
@@ -21,7 +25,9 @@
       "id": "matex7-hero",
       "required": true,
       "source_page": "https://consumer.huawei.com/cn/phones/mate-x7/",
-      "filename": "matex7_official_hero.webp",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate-x7/list/white.png",
+      "referer": "https://consumer.huawei.com/cn/phones/mate-x7/",
+      "filename": "matex7_official_hero.png",
       "target_dir": "assets/official",
       "source_label": "华为官网"
     }
