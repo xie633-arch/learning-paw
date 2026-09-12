@@ -24,6 +24,7 @@ await import('./korean-voice-ui-v04.js');
 
 // V0.5 mobile information architecture + built-in lesson reading content.
 await import('./learning-ui-v05.js');
+await import('./mobile-domain-grid-v051.js');
 
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
