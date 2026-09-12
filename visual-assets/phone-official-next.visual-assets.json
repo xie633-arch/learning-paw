@@ -5,6 +5,8 @@
       "id": "nova16-hero",
       "required": true,
       "source_page": "https://consumer.huawei.com/cn/phones/nova16/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/nova16/list/blue.png",
+      "referer": "https://consumer.huawei.com/cn/phones/nova16/",
       "filename": "nova16_official_hero.png",
       "target_dir": "assets/official",
       "source_label": "华为官网"
@@ -13,6 +15,8 @@
       "id": "changxiang90-hero",
       "required": true,
       "source_page": "https://consumer.huawei.com/cn/phones/changxiang-90/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/changxiang-90/list/black.png",
+      "referer": "https://consumer.huawei.com/cn/phones/changxiang-90/",
       "filename": "changxiang90_official_hero.png",
       "target_dir": "assets/official",
       "source_label": "华为官网"
