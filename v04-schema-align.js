@@ -44,7 +44,8 @@ Object.entries(curricula).forEach(([domain, curriculum]) => {
     step.schema_version = VERSION;
     step.lesson_id ||= step.id;
     step.phase_id ||= `${domain}-phase-${String(index + 1).padStart(2, '0')}`;
-    step.day_index ||= index + 1;
+    // Day 0 is a valid baseline index. Use nullish assignment so numeric 0 is not overwritten.
+    step.day_index ??= index + 1;
     step.objectives ||= [step.summary];
     step.prerequisites ||= index === 0 ? { concepts: [] } : { lessons: [curriculum.steps[index - 1].id] };
     step.estimated_minutes ||= { minimum: 20, standard: 50, intensive: 80 };
