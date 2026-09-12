@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - "**/*.js"
+      - "**/*.mjs"
       - "**/*.json"
       - "**/*.webmanifest"
       - "index.html"
@@ -33,7 +34,7 @@ jobs:
           while IFS= read -r file; do
             echo "node --check $file"
             node --check "$file"
-          done < <(find . -type f -name '*.js' -not -path './.git/*' | sort)
+          done < <(find . -type f \( -name '*.js' -o -name '*.mjs' \) -not -path './.git/*' | sort)
 
       - name: JSON syntax
         shell: bash
@@ -77,3 +78,6 @@ jobs:
               raise SystemExit('Missing APP_SHELL files: ' + ', '.join(missing))
           print(f'APP_SHELL OK: {len(refs)} references')
           PY
+
+      - name: Learner data migration smoke test
+        run: node tests/learner-data-smoke.mjs
