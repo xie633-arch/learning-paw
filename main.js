@@ -81,6 +81,9 @@ await import('./phone-product-lab-v091.js');
 // V0.10 closes the adaptive loop: Product Lab attempts -> StudyEvent -> Error Bank
 // -> Concept remediation -> revalidation -> resolved ErrorRecord.
 await import('./phone-adaptive-v10.js');
+// Product Lab rerenders its case DOM after each answer; this small observer keeps
+// the adaptive feedback note attached to the newly rendered feedback block.
+await import('./phone-adaptive-note-sync-v101.js');
 
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
