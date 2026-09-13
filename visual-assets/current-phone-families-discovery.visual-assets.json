@@ -1,5 +1,5 @@
 {
-  "purpose": "Discovery pass for current Huawei phone family official model/color imagery",
+  "purpose": "Discovery pass v2 for current Huawei phone family official model/color imagery; print the full verified candidate list for manual selection.",
   "assets": [
     {"id":"mate80","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80/","filename":"discover-mate80.png","target_dir":"assets/official/discovery"},
     {"id":"mate80-pro","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-pro/","filename":"discover-mate80-pro.png","target_dir":"assets/official/discovery"},
