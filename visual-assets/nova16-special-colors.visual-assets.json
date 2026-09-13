@@ -1,0 +1,8 @@
+{
+  "purpose": "Localize verified special CMF visuals that do not use list/<color>.png naming.",
+  "assets": [
+    {"id":"nova16-iridescent","required":true,"source_page":"https://consumer.huawei.com/cn/phones/nova16/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/nova16/assets/huawei-nova-16-cmf-iridescent-back-blur.png","filename":"iridescent.png","target_dir":"assets/official/nova16"},
+    {"id":"nova16pro-iridescent","required":true,"source_page":"https://consumer.huawei.com/cn/phones/nova16-pro/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/nova16-pro/imgs/huawei-nova-16-pro-cmf-iridescent-blur.jpg","filename":"iridescent.jpg","target_dir":"assets/official/nova16-pro"},
+    {"id":"nova16z-iridescent","required":true,"source_page":"https://consumer.huawei.com/cn/phones/nova16-z/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/nova16-z/imgs/huawei-nova-16-z-cmf-iridescent-blur.jpg","filename":"iridescent.jpg","target_dir":"assets/official/nova16-z"}
+  ]
+}
