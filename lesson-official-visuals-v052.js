@@ -1,11 +1,11 @@
 const STORAGE_KEY = 'personal-learning-os:v0.1';
 
 const portfolioVisuals = [
-  ['Mate 80', './assets/official/mate80_official_hero.png', '高端旗舰 / 商务旗舰'],
-  ['Pura 80', './assets/official/pura80_official_hero.png', '影像 / 设计 / 时尚表达'],
-  ['nova 16', './assets/official/nova16_official_hero.png', '年轻 / 人像 / 潮流社交'],
-  ['畅享 90', './assets/official/changxiang90_official_hero.png', '大众 / 务实 / 易用'],
-  ['Mate X7', './assets/official/matex7_official_hero.png', '折叠旗舰 / 高端创新'],
+  ['Mate 80', './assets/official/mate80_official_hero.png', '高端旗舰 / 商务旗舰', 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80/list/green.png'],
+  ['Pura 90', './assets/official/pura90/pura90_roland-purple.png', '影像 / 设计 / 时尚表达', 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-1.png'],
+  ['nova 16', './assets/official/nova16_official_hero.png', '年轻 / 人像 / 潮流社交', 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/nova16/list/blue.png'],
+  ['畅享 90', './assets/official/changxiang90_official_hero.png', '大众 / 务实 / 易用', 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/changxiang-90/list/black.png'],
+  ['Mate X7', './assets/official/matex7_official_hero.png', '折叠旗舰 / 高端创新', 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate-x7/list/white.png'],
 ];
 
 function currentPhoneLessonId() {
@@ -61,16 +61,22 @@ function inject() {
   const heading = document.createElement('h3');
   heading.textContent = '先看真实产品：五条产品线长什么样';
   const note = document.createElement('p');
-  note.textContent = '全部使用华为官网已核验并本地化的产品图。先形成产品线视觉印象，再理解它们为什么承担不同业务角色。';
+  note.textContent = '全部使用华为官网已核验的当前产品图。先形成产品线视觉印象，再理解它们为什么承担不同业务角色。Pura 已更新为当前 Pura 90 系列。';
   const grid = document.createElement('div');
   grid.className = 'lesson-official-visual-grid';
-  portfolioVisuals.forEach(([name, src, role]) => {
+  portfolioVisuals.forEach(([name, src, role, fallback]) => {
     const card = document.createElement('article');
     card.className = 'lesson-official-visual-card';
     const img = document.createElement('img');
     img.src = src;
     img.alt = `${name} 华为官方产品图`;
     img.loading = 'lazy';
+    img.dataset.fallback = '0';
+    img.addEventListener('error', () => {
+      if (img.dataset.fallback === '1') return;
+      img.dataset.fallback = '1';
+      img.src = fallback;
+    });
     const copy = document.createElement('div');
     const strong = document.createElement('strong');
     strong.textContent = name;
