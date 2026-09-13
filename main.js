@@ -12,7 +12,8 @@ koreanSteps.forEach(step => {
 
 await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
-await import('./korean-baseline-v04.js');
+
+// Day 0 baseline now runs through the staged Assessment layer rather than legacy review cards.
 
 // V0.5 Korean lessons: full built-in reading content + official weekly printable resources.
 await import('./korean-lesson-content-v05.js');
