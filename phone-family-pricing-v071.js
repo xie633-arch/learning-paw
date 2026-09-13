@@ -105,15 +105,26 @@ function syncModelTabPrices() {
     const raw = button.dataset.modelName || button.textContent.trim();
     const item = officialStartingPrices[raw];
     if (!item) return;
+
+    const priceText = ` · ${shortPrice(item)}`;
+    const existingPrice = button.querySelector('.phone-catalog__model-price');
+    const alreadySynced = button.dataset.modelName === raw
+      && button.dataset.priceVerifiedAt === PRICE_VERIFIED_AT
+      && existingPrice?.textContent === priceText;
+
+    button.setAttribute('aria-label', `${raw}，${shortPrice(item)}`);
+    if (alreadySynced) return;
+
     button.dataset.modelName = raw;
+    button.dataset.priceVerifiedAt = PRICE_VERIFIED_AT;
     button.replaceChildren();
+
     const name = document.createElement('span');
     name.textContent = raw;
     const price = document.createElement('span');
     price.className = 'phone-catalog__model-price';
-    price.textContent = ` · ${shortPrice(item)}`;
+    price.textContent = priceText;
     button.append(name, price);
-    button.setAttribute('aria-label', `${raw}，${shortPrice(item)}`);
   });
 }
 
@@ -121,14 +132,20 @@ function syncCurrentPrice() {
   const side = document.querySelector('.phone-catalog__side');
   const title = side?.querySelector('h4');
   if (!side || !title) return;
+
   const modelName = title.textContent.trim();
   const item = officialStartingPrices[modelName];
   if (!item) return;
 
-  side.querySelector('.phone-catalog__price')?.remove();
+  const priceKey = `${modelName}|${PRICE_VERIFIED_AT}|${item.value ?? item.label ?? ''}`;
+  const existing = side.querySelector('.phone-catalog__price');
+  if (existing?.dataset.priceKey === priceKey) return;
+  existing?.remove();
 
   const block = document.createElement('div');
   block.className = 'phone-catalog__price';
+  block.dataset.priceKey = priceKey;
+
   const row = document.createElement('div');
   row.className = 'phone-catalog__price-row';
 
@@ -159,15 +176,33 @@ function syncCurrentPrice() {
   else title.after(block);
 }
 
+let syncQueued = false;
+let syncRunning = false;
+
 function syncPricing() {
-  syncModelTabPrices();
-  syncCurrentPrice();
+  if (syncRunning) return;
+  syncRunning = true;
+  try {
+    syncModelTabPrices();
+    syncCurrentPrice();
+  } finally {
+    syncRunning = false;
+  }
+}
+
+function schedulePricingSync() {
+  if (syncQueued) return;
+  syncQueued = true;
+  requestAnimationFrame(() => {
+    syncQueued = false;
+    syncPricing();
+  });
 }
 
 installPricingStyles();
 const lessonReaderBody = document.querySelector('#lessonReaderBody');
 if (lessonReaderBody) {
-  new MutationObserver(() => queueMicrotask(syncPricing)).observe(lessonReaderBody, {
+  new MutationObserver(schedulePricingSync).observe(lessonReaderBody, {
     childList: true,
     subtree: true,
   });
@@ -175,8 +210,8 @@ if (lessonReaderBody) {
 
 document.addEventListener('click', event => {
   if (event.target.closest('.phone-catalog__family, .phone-catalog__model, .phone-catalog__color, .phone-catalog__thumb, #openLessonReaderBtn')) {
-    window.setTimeout(syncPricing, 0);
+    window.setTimeout(schedulePricingSync, 0);
   }
 });
 
-syncPricing();
+schedulePricingSync();
