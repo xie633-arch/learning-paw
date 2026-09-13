@@ -61,6 +61,18 @@ async function mockFsrsOffline(page) {
   }));
 }
 
+async function activateMobileTab(page, target) {
+  const button = page.locator(`#mobileBottomNav button[data-target="${target}"]`);
+  await button.click();
+  await assertResponsive(page, `mobile tab ${target}`);
+}
+
+async function activateDesktopTab(page, tab) {
+  const button = page.locator(`#uxDesktopTabs button[data-ux-tab="${tab}"]`);
+  await button.click();
+  await assertResponsive(page, `desktop tab ${tab}`);
+}
+
 async function runMobileSmoke(browser) {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -87,11 +99,17 @@ async function runMobileSmoke(browser) {
   // Exercise the offline scheduler fallback without relying on an external CDN in CI.
   await mockFsrsOffline(page);
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.locator('#domainGrid .domain-choice').first().waitFor({ state: 'visible' });
+  await page.locator('#todayLearningCard').waitFor({ state: 'visible' });
+  await page.locator('#mobileBottomNav').waitFor({ state: 'visible' });
   await assertResponsive(page, 'initial load');
 
   const domainCount = await page.locator('#domainGrid .domain-choice').count();
   assert(domainCount === 4, `expected 4 learning domains, got ${domainCount}`);
+
+  const dueLabel = (await page.locator('#dueCount').locator('xpath=following-sibling::span').textContent())?.trim();
+  const dailyCount = Number((await page.locator('#dueCount').textContent()) || 0);
+  assert(dueLabel === '今日建议', `expected daily-plan label, got ${dueLabel}`);
+  assert(Number.isFinite(dailyCount) && dailyCount <= 10, `daily review plan should be bounded at 10, got ${dailyCount}`);
 
   const duplicateIds = await page.evaluate(() => {
     const counts = new Map();
@@ -100,8 +118,11 @@ async function runMobileSmoke(browser) {
   });
   assert(duplicateIds.length === 0, `duplicate DOM ids: ${JSON.stringify(duplicateIds)}`);
 
-  // Phone: open the heaviest lesson, then exercise model/color/price updates.
+  // Phone: use real tab navigation, then exercise the heaviest lesson and ecommerce gallery.
+  await activateMobileTab(page, 'domainHub');
+  await page.locator('#domainGrid .domain-choice').first().waitFor({ state: 'visible' });
   await clickDomain(page, 'phone', '手机产品专家');
+  await activateMobileTab(page, 'todayLearningCard');
   await openGenericLesson(page, 'phone portfolio');
   await page.locator('.phone-catalog').waitFor({ state: 'visible' });
   await page.locator('.phone-catalog__price').waitFor({ state: 'visible' });
@@ -123,17 +144,23 @@ async function runMobileSmoke(browser) {
   }
   await closeGenericLesson(page);
 
-  // Retail and industry: verify both lesson readers open and close without runtime errors.
+  // Retail and industry: verify domain -> today tab transitions and lesson readers.
+  await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'retail', '商圈与零售');
+  await activateMobileTab(page, 'todayLearningCard');
   await openGenericLesson(page, 'retail');
   await closeGenericLesson(page);
 
+  await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'industry', '行业与商业');
+  await activateMobileTab(page, 'todayLearningCard');
   await openGenericLesson(page, 'industry');
   await closeGenericLesson(page);
 
   // Korean: verify Day 0 reader and staged assessment integration.
+  await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'korean', '韩语');
+  await activateMobileTab(page, 'todayLearningCard');
   const koreanButton = page.locator('#openKoreanLessonReaderBtn');
   await koreanButton.waitFor({ state: 'visible' });
   await koreanButton.click();
@@ -150,8 +177,10 @@ async function runMobileSmoke(browser) {
   await assertResponsive(page, 'Korean baseline assessment');
   await page.locator('#koAssessClose').click();
 
-  // Review flow: verify a real training session can start and exit.
+  // Review flow: verify the bounded daily plan can start and exit.
+  await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'phone', '手机产品专家');
+  await activateMobileTab(page, 'trainingHub');
   const startReview = page.locator('#startBtn');
   assert(!(await startReview.isDisabled()), 'phone review start button is unexpectedly disabled');
   await startReview.click();
@@ -169,6 +198,11 @@ async function runMobileSmoke(browser) {
   await page.locator('#exitTestBtn').click();
   await page.locator('#homeView:not(.hidden)').waitFor({ state: 'visible' });
 
+  // Device data tab must explicitly state that cross-device sync is not active.
+  await activateMobileTab(page, 'domainHub');
+  await page.locator('#deviceSyncStatus').waitFor({ state: 'visible' });
+  assert((await page.locator('#deviceSyncStatus').textContent())?.includes('未开启'), 'device sync status is unclear');
+
   await sleep(250);
   await assertResponsive(page, 'final mobile state');
   await context.close();
@@ -181,9 +215,13 @@ async function runDesktopSmoke(browser) {
   page.on('pageerror', error => failures.push(`desktop pageerror: ${error.message}`));
   await mockFsrsOffline(page);
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.locator('#domainGrid .domain-choice').first().waitFor({ state: 'visible' });
+  await page.locator('#uxDesktopTabs').waitFor({ state: 'visible' });
+  await page.locator('#todayLearningCard').waitFor({ state: 'visible' });
   await assertResponsive(page, 'desktop load');
+  await activateDesktopTab(page, 'domains');
+  await page.locator('#domainGrid .domain-choice').first().waitFor({ state: 'visible' });
   await clickDomain(page, 'phone', '手机产品专家');
+  await activateDesktopTab(page, 'today');
   await openGenericLesson(page, 'desktop phone');
   await page.locator('.phone-catalog').waitFor({ state: 'visible' });
   await assertResponsive(page, 'desktop phone catalog');
@@ -207,4 +245,4 @@ if (failures.length) {
   throw new Error(`Browser smoke found runtime errors:\n${failures.join('\n')}`);
 }
 
-console.log('Browser runtime smoke OK: mobile + desktop, 4 domains, lessons, Korean baseline, review, test, phone variants/pricing.');
+console.log('Browser runtime smoke OK: V0.8 tabs, bounded daily plan, mobile + desktop, 4 domains, lessons, Korean baseline, review, test, phone variants/pricing.');
