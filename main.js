@@ -50,6 +50,8 @@ await import('./lesson-official-visuals-v052.js');
 
 // V0.7 product-learning interaction: one ecommerce-style Variant catalog for all current phone families.
 await import('./phone-family-variant-gallery-v07.js');
+// Price data changes more frequently than product imagery, so keep it as a small independent verified layer.
+await import('./phone-family-pricing-v071.js');
 
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
