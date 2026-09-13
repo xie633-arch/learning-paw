@@ -1,4 +1,7 @@
 globalThis.window = globalThis.window || {};
+globalThis.document = globalThis.document || {
+  querySelector() { return null; },
+};
 
 globalThis.localStorage = globalThis.localStorage || {
   getItem() { return null; },
