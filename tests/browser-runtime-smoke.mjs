@@ -60,6 +60,7 @@ async function runMobileSmoke(browser) {
   });
   const page = await context.newPage();
   page.setDefaultTimeout(7000);
+  page.on('dialog', dialog => dialog.accept());
 
   page.on('pageerror', error => failures.push(`pageerror: ${error.message}`));
   page.on('console', message => {
