@@ -82,6 +82,9 @@ jobs:
       - name: Learner data migration smoke test
         run: node tests/learner-data-smoke.mjs
 
+      - name: Curriculum content integrity
+        run: node tests/content-integrity.mjs
+
       - name: Prepare browser runtime smoke
         shell: bash
         run: |
