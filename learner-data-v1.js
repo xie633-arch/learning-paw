@@ -2,7 +2,7 @@ import { cards as baseCards } from './cards.js';
 import { curricula, extraCards, tests } from './platform-data.js';
 
 const STORAGE_KEY = 'personal-learning-os:v0.1';
-const STATE_VERSION = 4;
+const STATE_VERSION = 5;
 const SCHEMA_VERSION = '1.0';
 const nativeSetItem = typeof Storage !== 'undefined' ? Storage.prototype.setItem : null;
 const nativeGetItem = typeof Storage !== 'undefined' ? Storage.prototype.getItem : null;
@@ -255,10 +255,36 @@ function lessonEvents(current, previous) {
 
 function deriveErrorRecords(events) {
   const records = new Map();
-  events.forEach(event => {
+  const sorted = [...events].sort((a, b) => new Date(a.occurred_at) - new Date(b.occurred_at));
+
+  sorted.forEach(event => {
     const recallGap = ['practice_attempt', 'listening_attempt', 'review_rating'].includes(event.event_type)
       && event.result?.rating === 'again';
     const assessmentError = event.event_type === 'assessment_attempt' && event.result?.correct === false;
+    const successfulRevalidation = event.revalidation === true && (
+      (event.event_type === 'assessment_attempt' && event.result?.correct === true)
+      || (['practice_attempt', 'listening_attempt', 'review_rating'].includes(event.event_type) && event.result?.rating === 'good')
+    );
+
+    if (successfulRevalidation) {
+      const concept = event.concept_id || `content:${event.content_id || 'unknown'}`;
+      const skill = event.skill || 'general';
+      const requestedType = event.revalidation_error_type
+        || (event.event_type === 'assessment_attempt' ? 'assessment_error' : 'recall_gap');
+      const key = `${concept}::${skill}::${requestedType}`;
+      const existing = records.get(key);
+      if (existing?.status === 'active') {
+        existing.status = 'resolved';
+        existing.resolved_at = event.occurred_at;
+        existing.resolution_event_id = event.event_id;
+        existing.next_action = 'none';
+        existing.evidence_event_ids.push(event.event_id);
+        existing.last_seen_at = event.occurred_at;
+        existing.revalidations = Number(existing.revalidations || 0) + 1;
+      }
+      return;
+    }
+
     if (!recallGap && !assessmentError) return;
 
     const concept = event.concept_id || `content:${event.content_id || 'unknown'}`;
@@ -272,7 +298,7 @@ function deriveErrorRecords(events) {
       domain: event.domain,
       skill,
       error_type: errorType,
-      severity: assessmentError ? 'medium' : 'medium',
+      severity: 'medium',
       evidence_event_ids: [],
       occurrences: 0,
       first_seen_at: event.occurred_at,
@@ -280,7 +306,17 @@ function deriveErrorRecords(events) {
       status: 'active',
       next_action: assessmentError ? 'targeted_review' : 'spaced_recall',
       schema_version: SCHEMA_VERSION,
+      revalidations: 0,
+      resolved_at: null,
+      resolution_event_id: null,
     };
+
+    existing.content_id = event.content_id || existing.content_id;
+    existing.domain = event.domain || existing.domain;
+    existing.status = 'active';
+    existing.next_action = assessmentError ? 'targeted_review' : 'spaced_recall';
+    existing.resolved_at = null;
+    existing.resolution_event_id = null;
     existing.evidence_event_ids.push(event.event_id);
     existing.occurrences += 1;
     if (new Date(event.occurred_at).getTime() < new Date(existing.first_seen_at).getTime()) existing.first_seen_at = event.occurred_at;
@@ -288,7 +324,11 @@ function deriveErrorRecords(events) {
     if (existing.occurrences >= 3) existing.severity = 'high';
     records.set(key, existing);
   });
-  return [...records.values()].sort((a, b) => new Date(b.last_seen_at) - new Date(a.last_seen_at));
+
+  return [...records.values()].sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+    return new Date(b.last_seen_at) - new Date(a.last_seen_at);
+  });
 }
 
 function deriveLearnerSignals(events) {
@@ -307,6 +347,7 @@ function deriveLearnerSignals(events) {
       attempts: 0,
       ratings: { good: 0, hard: 0, again: 0 },
       assessment: { correct: 0, incorrect: 0 },
+      revalidations: { passed: 0, failed: 0 },
       last_seen_at: event.occurred_at,
     };
     signal.attempts += 1;
@@ -315,6 +356,8 @@ function deriveLearnerSignals(events) {
     }
     if (event.result?.correct === true) signal.assessment.correct += 1;
     if (event.result?.correct === false) signal.assessment.incorrect += 1;
+    if (event.revalidation === true && event.result?.correct === true) signal.revalidations.passed += 1;
+    if (event.revalidation === true && event.result?.correct === false) signal.revalidations.failed += 1;
     if (new Date(event.occurred_at).getTime() > new Date(signal.last_seen_at).getTime()) signal.last_seen_at = event.occurred_at;
     signals.set(key, signal);
   });
@@ -389,6 +432,7 @@ function enrichState(input, previous = null) {
   state.learnerSignals = deriveLearnerSignals(state.studyEvents);
   state.migrations.history_to_study_event_v1 ||= new Date().toISOString();
   state.migrations.assessment_attempt_v1 ||= new Date().toISOString();
+  state.migrations.error_record_resolution_v1 ||= new Date().toISOString();
   state.migrations.learner_data_compat_v1 = new Date().toISOString();
   return state;
 }
@@ -417,10 +461,12 @@ function updateRuntimeStatus(state) {
     study_event_count: asArray(state.studyEvents).length,
     assessment_attempt_count: asArray(state.assessmentAttempts).length,
     active_error_count: asArray(state.errorRecords).filter(item => item.status === 'active').length,
+    resolved_error_count: asArray(state.errorRecords).filter(item => item.status === 'resolved').length,
     introduced_content_count: Object.keys(asObject(state.introducedContent)).length,
     learner_signal_count: Object.keys(asObject(state.learnerSignals)).length,
     source_of_truth: 'StudyEvent v1',
   };
+  window.dispatchEvent(new CustomEvent('learning-data-updated', { detail: window.__LEARNER_DATA_V1__ }));
 }
 
 if (typeof window !== 'undefined' && nativeSetItem && nativeGetItem) {
