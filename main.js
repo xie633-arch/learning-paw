@@ -15,12 +15,13 @@ if (domainOverrides.korean) {
     { label: 'Day 0–28 课程路线', status: '可用' },
     { label: '主动表达 / 听写 / TTS', status: '可用' },
     { label: 'ChatGPT Voice 每日任务', status: '可用' },
-    { label: 'Day 0 / 7 / 14 / 21 / 28 阶段验收', status: '可用' },
+    { label: '每日 Exit Check + Day 0 / 7 / 14 / 21 / 28 阶段验收', status: '可用' },
   ];
 }
 
 await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
+await import('./korean-practice-month1-v06.js');
 
 // Day 0 baseline now runs through the staged Assessment layer rather than legacy review cards.
 
@@ -42,6 +43,7 @@ await import('./korean-assessment-ui-v05.js');
 // V0.5 mobile information architecture + built-in lesson reading content.
 await import('./learning-ui-v05.js');
 await import('./korean-learning-ui-v05.js');
+await import('./korean-completion-guard-v06.js');
 await import('./mobile-domain-grid-v051.js');
 await import('./official-visual-gallery-v051.js');
 await import('./lesson-official-visuals-v052.js');
@@ -55,15 +57,15 @@ const syncKoreanRuntimeCopy = () => {
 
   const lead = document.querySelector('#homeLead');
   if (lead) {
-    lead.textContent = 'Day 0–28 已提供完整学习正文：每天直接在站内学习，Curriculum 解锁新课、FSRS 管理复习，并附当日 ChatGPT Voice Prompt；阶段验收按 Day 0 / 7 / 14 / 21 / 28 逐步解锁。';
+    lead.textContent = 'Day 0–28 已提供完整学习正文：Curriculum 解锁新课、当日训练卡与 FSRS 负责练习和复习，普通学习日通过 Exit Check 后完成；同时附每日 ChatGPT Voice Prompt、每周官方打印材料与阶段验收。';
   }
 
   const notice = document.querySelector('#koreanNotice');
   if (notice) {
     const heading = notice.querySelector('h2');
     const body = notice.querySelector('p.muted');
-    if (heading) heading.textContent = '韩语：课程正文 + ChatGPT Voice + 阶段验收';
-    if (body) body.textContent = '不需要自己找资料。Learning Paw 提供 Day 0–28 课程正文、训练、每日 Voice Prompt、每周官方打印材料；Day 0、Day 7、Day 14、Day 21 与 Day 28 阶段验收均已接入并随课程进度自动解锁。';
+    if (heading) heading.textContent = '韩语：正文 + 训练 + Exit Check + Voice + 阶段验收';
+    if (body) body.textContent = '不需要自己找资料。Learning Paw 提供 Day 0–28 正文、课程解锁训练卡、FSRS、普通学习日 Exit Check、每日 ChatGPT Voice Prompt、每周官方打印材料，以及 Day 0 / 7 / 14 / 21 / 28 阶段验收。';
   }
 };
 
