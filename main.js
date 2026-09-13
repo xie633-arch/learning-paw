@@ -93,3 +93,7 @@ if (koreanDomainName) {
 // V0.8 turns the long dashboard into real tab views and replaces the misleading
 // "all unseen cards are due" presentation with a bounded daily review plan.
 await import('./ux-v08.js');
+
+// V0.8.1 applies the visual layer: Today-first hierarchy, compact stats,
+// domain accents and stronger App-like navigation / button feedback.
+await import('./visual-ui-v081.js');
