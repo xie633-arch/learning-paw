@@ -53,6 +53,14 @@ async function closeGenericLesson(page) {
   await page.locator('#lessonReaderOverlay').waitFor({ state: 'hidden' });
 }
 
+async function mockFsrsOffline(page) {
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'throw new Error("CI simulated FSRS offline");',
+  }));
+}
+
 async function runMobileSmoke(browser) {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -76,8 +84,8 @@ async function runMobileSmoke(browser) {
     } catch {}
   });
 
-  // Force the application to exercise its offline scheduler fallback instead of depending on a CDN in CI.
-  await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+  // Exercise the offline scheduler fallback without relying on an external CDN in CI.
+  await mockFsrsOffline(page);
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.locator('#domainGrid .domain-choice').first().waitFor({ state: 'visible' });
   await assertResponsive(page, 'initial load');
@@ -171,7 +179,7 @@ async function runDesktopSmoke(browser) {
   const page = await context.newPage();
   page.setDefaultTimeout(7000);
   page.on('pageerror', error => failures.push(`desktop pageerror: ${error.message}`));
-  await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+  await mockFsrsOffline(page);
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.locator('#domainGrid .domain-choice').first().waitFor({ state: 'visible' });
   await assertResponsive(page, 'desktop load');
