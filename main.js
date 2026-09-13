@@ -2,13 +2,22 @@ await import('./korean-v04.js');
 
 // Keep the running Korean module aligned with the Obsidian decision:
 // Learning Paw schedules/records speaking tasks; continuous voice practice happens in ChatGPT Voice.
-const { curricula } = await import('./platform-data.js');
+const { curricula, domainOverrides } = await import('./platform-data.js');
 const koreanSteps = curricula.korean?.steps || [];
 koreanSteps.forEach(step => {
   (step.activities || []).forEach(activity => {
     if (activity.type === 'ai_conversation') activity.type = 'chatgpt_voice_task';
   });
 });
+
+if (domainOverrides.korean) {
+  domainOverrides.korean.modes = [
+    { label: 'Day 0–28 课程路线', status: '可用' },
+    { label: '主动表达 / 听写 / TTS', status: '可用' },
+    { label: 'ChatGPT Voice 每日任务', status: '可用' },
+    { label: 'Day 0 / 7 / 14 / 21 / 28 阶段验收', status: '可用' },
+  ];
+}
 
 await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
@@ -27,7 +36,7 @@ await import('./learner-data-v1.js');
 await import('./app.js');
 await import('./korean-voice-ui-v04.js');
 
-// Korean staged assessment: Day 0 baseline + Day 7 Week 1 objective check.
+// Korean staged assessment: Day 0 baseline + Day 7 / 14 / 21 / 28 checks.
 await import('./korean-assessment-ui-v05.js');
 
 // V0.5 mobile information architecture + built-in lesson reading content.
@@ -54,7 +63,7 @@ const syncKoreanRuntimeCopy = () => {
     const heading = notice.querySelector('h2');
     const body = notice.querySelector('p.muted');
     if (heading) heading.textContent = '韩语：课程正文 + ChatGPT Voice + 阶段验收';
-    if (body) body.textContent = '不需要自己找资料。Learning Paw 提供 Day 0–28 课程正文、训练、每日 Voice Prompt、每周官方打印材料；Day 0 基线与 Week 1 阶段验收已接入，后续验收随课程逐步开放。';
+    if (body) body.textContent = '不需要自己找资料。Learning Paw 提供 Day 0–28 课程正文、训练、每日 Voice Prompt、每周官方打印材料；Day 0、Day 7、Day 14、Day 21 与 Day 28 阶段验收均已接入并随课程进度自动解锁。';
   }
 };
 
