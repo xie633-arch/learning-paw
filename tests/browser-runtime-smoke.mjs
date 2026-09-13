@@ -103,6 +103,13 @@ async function runMobileSmoke(browser) {
   await page.locator('#mobileBottomNav').waitFor({ state: 'visible' });
   await assertResponsive(page, 'initial load');
 
+  const knowledgeMeta = await page.evaluate(() => window.__PHONE_KNOWLEDGE_V09__ || null);
+  assert(knowledgeMeta?.topics === 10, `expected 10 phone knowledge topics, got ${JSON.stringify(knowledgeMeta)}`);
+  assert(knowledgeMeta?.concepts >= 50, `expected at least 50 phone knowledge concepts, got ${knowledgeMeta?.concepts}`);
+  assert(knowledgeMeta?.starterCards === 15, `expected 15 starter cards, got ${knowledgeMeta?.starterCards}`);
+  const knowledgeGate = await page.evaluate(() => window.__PHONE_KNOWLEDGE_GATE_V091__ || null);
+  assert(knowledgeGate?.unlocked === false, 'fresh learner should not receive Phone Knowledge starter cards before portfolio completion');
+
   const domainCount = await page.locator('#domainGrid .domain-choice').count();
   assert(domainCount === 4, `expected 4 learning domains, got ${domainCount}`);
 
@@ -143,6 +150,20 @@ async function runMobileSmoke(browser) {
     assert(before !== after, 'phone color switch did not update hero image');
   }
   await closeGenericLesson(page);
+
+  // Phone Knowledge Base: route tab must expose the searchable Concept Tree without dumping it into today's plan.
+  await activateMobileTab(page, 'routeCard');
+  const knowledgeCard = page.locator('#phoneKnowledgeCard');
+  await knowledgeCard.waitFor({ state: 'visible' });
+  assert(await page.locator('#phoneKnowledgeTopics .pk-topic-button').count() === 10, 'phone knowledge topic strip should contain 10 topics');
+  const statusText = (await page.locator('#phoneKnowledgeStatus').textContent()) || '';
+  assert(statusText.includes('训练卡暂不一次性放出'), `unexpected Phone Knowledge gate copy: ${statusText}`);
+  const search = page.locator('#phoneKnowledgeSearch');
+  await search.fill('GHz');
+  await page.waitForFunction(() => document.querySelector('#phoneKnowledgeBody')?.textContent?.includes('CPU 频率 / GHz'));
+  assert((await page.locator('#phoneKnowledgeBody').textContent())?.includes('3.8 GHz'), 'GHz concept did not render from knowledge search');
+  await assertResponsive(page, 'phone knowledge search');
+  await search.fill('');
 
   // Retail and industry: verify domain -> today tab transitions and lesson readers.
   await activateMobileTab(page, 'domainHub');
@@ -225,6 +246,11 @@ async function runDesktopSmoke(browser) {
   await openGenericLesson(page, 'desktop phone');
   await page.locator('.phone-catalog').waitFor({ state: 'visible' });
   await assertResponsive(page, 'desktop phone catalog');
+  await closeGenericLesson(page);
+  await activateDesktopTab(page, 'route');
+  await page.locator('#phoneKnowledgeCard').waitFor({ state: 'visible' });
+  assert(await page.locator('#phoneKnowledgeTopics .pk-topic-button').count() === 10, 'desktop Phone Knowledge Base topics missing');
+  await assertResponsive(page, 'desktop phone knowledge');
   await context.close();
 }
 
@@ -245,4 +271,4 @@ if (failures.length) {
   throw new Error(`Browser smoke found runtime errors:\n${failures.join('\n')}`);
 }
 
-console.log('Browser runtime smoke OK: V0.8 tabs, bounded daily plan, mobile + desktop, 4 domains, lessons, Korean baseline, review, test, phone variants/pricing.');
+console.log('Browser runtime smoke OK: V0.9 Phone Knowledge Base + V0.8 tabs/daily plan, mobile + desktop, 4 domains, lessons, Korean baseline, review, test, phone variants/pricing.');
