@@ -10,24 +10,9 @@ const family = {
       positioning: '标准旗舰｜轻薄、影像与长续航',
       source: 'https://consumer.huawei.com/cn/phones/pura90/',
       colors: [
-        {
-          name: '罗兰紫',
-          swatch: '#777aa0',
-          local: './assets/official/pura90/pura90_roland-purple.png',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-1.png',
-        },
-        {
-          name: '雪域白',
-          swatch: '#f4f3ef',
-          local: './assets/official/pura90/pura90_snow-white.png',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-2.png',
-        },
-        {
-          name: '丝绒黑',
-          swatch: '#262626',
-          local: './assets/official/pura90/pura90_velvet-black.png',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-3.png',
-        },
+        { name: '罗兰紫', swatch: '#777aa0', local: './assets/official/pura90/pura90_roland-purple.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-1.png' },
+        { name: '雪域白', swatch: '#f4f3ef', local: './assets/official/pura90/pura90_snow-white.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-2.png' },
+        { name: '丝绒黑', swatch: '#262626', local: './assets/official/pura90/pura90_velvet-black.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-3.png' },
       ],
     },
     {
@@ -36,30 +21,10 @@ const family = {
       positioning: 'Pro 旗舰｜更强影像与微距长焦',
       source: 'https://consumer.huawei.com/cn/phones/pura90-pro/',
       colors: [
-        {
-          name: '粉红芭乐',
-          swatch: '#e99a9e',
-          local: './assets/official/pura90/pura90pro_pink-guava.png',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-1.png',
-        },
-        {
-          name: '橘子汽水',
-          swatch: '#efa46e',
-          local: './assets/official/pura90/pura90pro_orange-soda.png',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-2.png',
-        },
-        {
-          name: '椰青白',
-          swatch: '#f2f0e6',
-          local: './assets/official/pura90/pura90pro_coconut-white.png',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-3.png',
-        },
-        {
-          name: '桑果黑',
-          swatch: '#4d4b4b',
-          local: './assets/official/pura90/pura90pro_mulberry-black.png',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-4.png',
-        },
+        { name: '粉红芭乐', swatch: '#e99a9e', local: './assets/official/pura90/pura90pro_pink-guava.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-1.png' },
+        { name: '橘子汽水', swatch: '#efa46e', local: './assets/official/pura90/pura90pro_orange-soda.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-2.png' },
+        { name: '椰青白', swatch: '#f2f0e6', local: './assets/official/pura90/pura90pro_coconut-white.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-3.png' },
+        { name: '桑果黑', swatch: '#4d4b4b', local: './assets/official/pura90/pura90pro_mulberry-black.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-4.png' },
       ],
     },
     {
@@ -68,36 +33,11 @@ const family = {
       positioning: '顶配旗舰｜2 亿长焦与更大屏旗舰体验',
       source: 'https://consumer.huawei.com/cn/phones/pura90-pro-max/',
       colors: [
-        {
-          name: '橘子海',
-          swatch: '#f27d4b',
-          local: './assets/official/pura90/pura90promax_orange-sea.jpg',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-1.jpg',
-        },
-        {
-          name: '霞光紫',
-          swatch: '#8373d1',
-          local: './assets/official/pura90/pura90promax_glow-purple.jpg',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-2.jpg',
-        },
-        {
-          name: '翡翠湖',
-          swatch: '#768668',
-          local: './assets/official/pura90/pura90promax_jade-lake.jpg',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-3.jpg',
-        },
-        {
-          name: '晨曦金',
-          swatch: '#dfc9a2',
-          local: './assets/official/pura90/pura90promax_dawn-gold.jpg',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-4.jpg',
-        },
-        {
-          name: '曜石黑',
-          swatch: '#232323',
-          local: './assets/official/pura90/pura90promax_obsidian-black.jpg',
-          remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-5.jpg',
-        },
+        { name: '橘子海', swatch: '#f27d4b', local: './assets/official/pura90/pura90promax_orange-sea.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-1.jpg' },
+        { name: '霞光紫', swatch: '#8373d1', local: './assets/official/pura90/pura90promax_glow-purple.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-2.jpg' },
+        { name: '翡翠湖', swatch: '#768668', local: './assets/official/pura90/pura90promax_jade-lake.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-3.jpg' },
+        { name: '晨曦金', swatch: '#dfc9a2', local: './assets/official/pura90/pura90promax_dawn-gold.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-4.jpg' },
+        { name: '曜石黑', swatch: '#232323', local: './assets/official/pura90/pura90promax_obsidian-black.png', remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-5.jpg' },
       ],
     },
   ],
@@ -184,7 +124,6 @@ function makeImage(source, alt) {
 function renderGallery(section) {
   let modelIndex = 0;
   let colorIndex = 0;
-
   const tabs = section.querySelector('.variant-model-tabs');
   const hero = section.querySelector('.variant-hero');
   const side = section.querySelector('.variant-side');
@@ -192,7 +131,6 @@ function renderGallery(section) {
   function draw() {
     const model = family.models[modelIndex];
     const color = model.colors[colorIndex] || model.colors[0];
-
     tabs.innerHTML = '';
     family.models.forEach((item, index) => {
       const button = document.createElement('button');
@@ -200,28 +138,21 @@ function renderGallery(section) {
       button.className = 'variant-model-btn';
       button.textContent = item.name;
       button.setAttribute('aria-pressed', String(index === modelIndex));
-      button.addEventListener('click', () => {
-        modelIndex = index;
-        colorIndex = 0;
-        draw();
-      });
+      button.addEventListener('click', () => { modelIndex = index; colorIndex = 0; draw(); });
       tabs.append(button);
     });
 
     hero.innerHTML = '';
     hero.append(makeImage(color, `${model.name} ${color.name} 华为官方产品图`));
-
     side.innerHTML = '';
     const title = document.createElement('h4');
     title.textContent = model.name;
     const positioning = document.createElement('p');
     positioning.className = 'variant-positioning';
     positioning.textContent = model.positioning;
-
     const label = document.createElement('div');
     label.className = 'variant-color-label';
     label.innerHTML = `<span>选择颜色</span><strong>${color.name}</strong>`;
-
     const colorList = document.createElement('div');
     colorList.className = 'variant-color-list';
     model.colors.forEach((item, index) => {
@@ -235,13 +166,9 @@ function renderGallery(section) {
       const text = document.createElement('span');
       text.textContent = item.name;
       button.append(dot, text);
-      button.addEventListener('click', () => {
-        colorIndex = index;
-        draw();
-      });
+      button.addEventListener('click', () => { colorIndex = index; draw(); });
       colorList.append(button);
     });
-
     const thumbs = document.createElement('div');
     thumbs.className = 'variant-thumbs';
     model.colors.forEach((item, index) => {
@@ -251,23 +178,17 @@ function renderGallery(section) {
       button.setAttribute('aria-label', `${model.name} ${item.name}`);
       button.setAttribute('aria-pressed', String(index === colorIndex));
       button.append(makeImage(item, `${model.name} ${item.name} 缩略图`));
-      button.addEventListener('click', () => {
-        colorIndex = index;
-        draw();
-      });
+      button.addEventListener('click', () => { colorIndex = index; draw(); });
       thumbs.append(button);
     });
-
     const source = document.createElement('a');
     source.className = 'variant-source-link';
     source.href = model.source;
     source.target = '_blank';
     source.rel = 'noopener noreferrer';
     source.textContent = '查看华为官网当前型号';
-
     side.append(title, positioning, label, colorList, thumbs, source);
   }
-
   draw();
 }
 
@@ -277,7 +198,6 @@ function inject() {
   if (!body || body.querySelector('.variant-gallery-section')) return;
   const title = body.querySelector('#lessonReaderTitle');
   if (!title || !title.textContent.includes('产品组合')) return;
-
   const section = document.createElement('section');
   section.className = 'variant-gallery-section';
   section.innerHTML = `
@@ -292,7 +212,6 @@ function inject() {
       <div class="variant-side"></div>
     </div>
   `;
-
   const existingVisuals = body.querySelector('.lesson-official-visuals');
   if (existingVisuals) existingVisuals.after(section);
   else {
@@ -300,7 +219,6 @@ function inject() {
     if (intro) intro.after(section);
     else title.after(section);
   }
-
   renderGallery(section);
 }
 
