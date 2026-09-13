@@ -74,9 +74,9 @@ reader?.addEventListener('click', event => {
 
 const sync = () => queueMicrotask(syncGuards);
 syncGuards();
-['#domainName','#todayLessonTitle','#routeList','#koreanLessonReaderBody'].forEach(selector => {
+['#domainName','#todayLessonTitle','#routeList','#koreanReaderBody'].forEach(selector => {
   const node = document.querySelector(selector);
   if (node) new MutationObserver(sync).observe(node,{childList:true,subtree:true,characterData:true});
 });
 
-window.__KOREAN_COMPLETION_GUARD_V06__ = { version:'0.6.0' };
+window.__KOREAN_COMPLETION_GUARD_V06__ = { version:'0.6.1' };
