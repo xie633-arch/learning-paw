@@ -30,9 +30,9 @@ const productFamilies = [
       {
         id: 'mate80-pro-max', name: 'Mate 80 Pro Max', source: 'https://consumer.huawei.com/cn/phones/mate80-pro-max/',
         positioning: 'Pro Max｜更大屏、双层 OLED 与旗舰影像上限',
-        note: '官网另有“极光青”。当前本地图库只展示已经逐张下载验证成功的配色主图。',
         colors: [
           ['极昼金','#d9c495','./assets/official/mate80-pro-max/gold.png'],
+          ['极光青','#6f9ea0','./assets/official/mate80-pro-max/green.png'],
           ['极地银','#c8cbd0','./assets/official/mate80-pro-max/silver.png'],
           ['极夜黑','#202124','./assets/official/mate80-pro-max/black.png'],
         ],
