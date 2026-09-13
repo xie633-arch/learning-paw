@@ -81,3 +81,32 @@ jobs:
 
       - name: Learner data migration smoke test
         run: node tests/learner-data-smoke.mjs
+
+      - name: Prepare browser runtime smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME_PATH" ]; then
+            echo "No Chrome/Chromium executable found on runner" >&2
+            exit 1
+          fi
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          npm install --no-save --no-package-lock playwright-core@latest
+
+      - name: Browser runtime smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/learning-paw-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              break
+            fi
+            sleep 0.2
+          done
+
+          SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/browser-runtime-smoke.mjs
