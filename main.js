@@ -74,6 +74,10 @@ const phoneKnowledgeCard = document.querySelector('#phoneKnowledgeCard');
 const routeCard = document.querySelector('#routeCard');
 if (phoneKnowledgeCard && routeCard && !routeCard.contains(phoneKnowledgeCard)) routeCard.append(phoneKnowledgeCard);
 
+// V0.9.1 connects technical concepts to current real products and official specs.
+// It lives inside the Knowledge Base so browsing facts does not inflate today's FSRS workload.
+await import('./phone-product-lab-v091.js');
+
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
   if (domainName?.textContent?.trim() !== '韩语') return;
