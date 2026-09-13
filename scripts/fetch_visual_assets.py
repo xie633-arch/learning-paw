@@ -179,7 +179,7 @@ def main() -> int:
                 candidates = discover_candidates(source_page, args.timeout, args.retries)
                 discovered += 1; failures += int(required)
                 print(f"[{aid}] DISCOVERED {len(candidates)} candidates from {source_page}")
-                for c in candidates[:12]: print(f"  - score={c['score']} {c['reason']}: {c['url']}")
+                for c in candidates: print(f"  - score={c['score']} {c['reason']}: {c['url']}")
                 print(f"[{aid}] ACTION: choose a verified candidate and set image_url; no automatic guess was made.")
             except Exception as exc:
                 print(f"[{aid}] BLOCKED discovery: {exc}", file=sys.stderr); failures += int(required)
