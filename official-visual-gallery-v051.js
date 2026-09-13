@@ -7,11 +7,11 @@ const officialVisuals = [
     focus: 'Mate 系列直板旗舰设计、后摄 Deco 与高端商务产品识别',
   },
   {
-    name: 'HUAWEI Pura 80',
-    local: './assets/official/pura80_official_hero.png',
-    remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura80/list/velvet-gold.png',
-    source: 'https://consumer.huawei.com/cn/phones/pura80/',
-    focus: 'Pura 系列影像与设计语言、机身配色和后摄辨识',
+    name: 'HUAWEI Pura 90',
+    local: './assets/official/pura90/pura90_roland-purple.png',
+    remote: 'https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-1.png',
+    source: 'https://consumer.huawei.com/cn/phones/pura90/',
+    focus: 'Pura 90 系列影像与设计语言；进入课程后可继续切换 Pro / Pro Max 与全部官方配色',
   },
   {
     name: 'HUAWEI nova 16',
@@ -83,7 +83,7 @@ function buildGallery() {
 
   const note = document.createElement('p');
   note.className = 'official-visual-note';
-  note.textContent = '覆盖 Mate、Pura、nova、畅享与折叠五类产品线。以下均为华为官网已核验产品图，不使用 AI 生成外观；优先读取本地 assets，官网 CDN 仅作兜底。';
+  note.textContent = '以下均为华为官网已核验并本地化的当前产品图，不使用 AI 生成外观。系列存在多个型号与配色时，课程内使用 Variant 选择器切换，而不是只放一张代表图。';
   list.append(note);
 
   const grid = document.createElement('div');
