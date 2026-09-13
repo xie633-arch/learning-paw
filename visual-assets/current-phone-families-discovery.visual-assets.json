@@ -1,0 +1,21 @@
+{
+  "purpose": "Discovery pass for current Huawei phone family official model/color imagery",
+  "assets": [
+    {"id":"mate80","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80/","filename":"discover-mate80.png","target_dir":"assets/official/discovery"},
+    {"id":"mate80-pro","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-pro/","filename":"discover-mate80-pro.png","target_dir":"assets/official/discovery"},
+    {"id":"mate80-pro-max","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-pro-max/","filename":"discover-mate80-pro-max.png","target_dir":"assets/official/discovery"},
+    {"id":"mate80-rs","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-rs-ultimate-design/","filename":"discover-mate80-rs.png","target_dir":"assets/official/discovery"},
+    {"id":"mate80-fengchi","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-pro-max-fengchiban/","filename":"discover-mate80-fengchi.png","target_dir":"assets/official/discovery"},
+    {"id":"nova16","required":false,"source_page":"https://consumer.huawei.com/cn/phones/nova16/","filename":"discover-nova16.png","target_dir":"assets/official/discovery"},
+    {"id":"nova16-pro","required":false,"source_page":"https://consumer.huawei.com/cn/phones/nova16-pro/","filename":"discover-nova16-pro.png","target_dir":"assets/official/discovery"},
+    {"id":"nova16-ultra","required":false,"source_page":"https://consumer.huawei.com/cn/phones/nova16-ultra/","filename":"discover-nova16-ultra.png","target_dir":"assets/official/discovery"},
+    {"id":"nova16-se","required":false,"source_page":"https://consumer.huawei.com/cn/phones/nova16-se/","filename":"discover-nova16-se.png","target_dir":"assets/official/discovery"},
+    {"id":"nova16-z","required":false,"source_page":"https://consumer.huawei.com/cn/phones/nova16-z/","filename":"discover-nova16-z.png","target_dir":"assets/official/discovery"},
+    {"id":"changxiang90","required":false,"source_page":"https://consumer.huawei.com/cn/phones/changxiang-90/","filename":"discover-changxiang90.png","target_dir":"assets/official/discovery"},
+    {"id":"changxiang90-plus","required":false,"source_page":"https://consumer.huawei.com/cn/phones/changxiang-90-plus/","filename":"discover-changxiang90-plus.png","target_dir":"assets/official/discovery"},
+    {"id":"changxiang90-pro-max","required":false,"source_page":"https://consumer.huawei.com/cn/phones/changxiang-90-pro-max/","filename":"discover-changxiang90-pro-max.png","target_dir":"assets/official/discovery"},
+    {"id":"changxiang90m-plus","required":false,"source_page":"https://consumer.huawei.com/cn/phones/changxiang-90m-plus/","filename":"discover-changxiang90m-plus.png","target_dir":"assets/official/discovery"},
+    {"id":"mate-x7","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate-x7/","filename":"discover-matex7.png","target_dir":"assets/official/discovery"},
+    {"id":"mate-xt2","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate-xt-2-ultimate-design/","filename":"discover-matext2.png","target_dir":"assets/official/discovery"}
+  ]
+}
