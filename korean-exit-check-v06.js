@@ -16,7 +16,7 @@ export const koreanExitChecks = {
     q('audio_mcq','点击播放，选择你听到的词。',{ audio:'한국어', options:['한국','한국어','한글','우유'], answer:1 }),
   ]},
   'ko-day-011': { title:'Day 11 Exit Check｜鼻音化意识', items:[
-    q('mcq','国물的标准拼写是哪一个？（不要按听感改写）',{ options:['궁물','국물','국문','공물'], answer:1 }),
+    q('mcq','국물 的标准拼写是哪一个？（不要按听感改写）',{ options:['궁물','국물','국문','공물'], answer:1 }),
     q('mcq','学习鼻音化的第一阶段目标是什么？',{ options:['背完所有音变术语','听到变化时仍能联系到正确单词','所有词都按字面逐辅音读','只看拼写不听声音'], answer:1 }),
   ]},
   'ko-day-012': { title:'Day 12 Exit Check｜问候与礼貌表达', items:[
@@ -193,4 +193,4 @@ export function openKoreanExitCheck(lessonId,onPassed) {
   renderItem();
 }
 
-window.__KOREAN_EXIT_CHECK_V06__ = { version:'0.6.0', count:Object.keys(koreanExitChecks).length };
+window.__KOREAN_EXIT_CHECK_V06__ = { version:'0.6.1', count:Object.keys(koreanExitChecks).length };
