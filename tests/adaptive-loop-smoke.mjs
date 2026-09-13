@@ -26,7 +26,6 @@ try {
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__PHONE_ADAPTIVE_V10__?.version === '0.10.0');
-  await page.waitForFunction(() => window.__LEARNER_DATA_V1__?.state_version === 5);
 
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
   await page.locator('[data-domain="phone"]').click();
@@ -42,6 +41,7 @@ try {
   }, STORAGE_KEY);
 
   const afterWrong = await page.evaluate(key => JSON.parse(localStorage.getItem(key) || '{}'), STORAGE_KEY);
+  assert(afterWrong.version >= 5, `adaptive write should upgrade learner state to v5, got ${afterWrong.version}`);
   const labEvents = (afterWrong.studyEvents || []).filter(event => event.source === 'phone_product_lab');
   assert(labEvents.length === 3, `expected 3 concept StudyEvents after first wrong answer, got ${labEvents.length}`);
   const activeErrors = (afterWrong.errorRecords || []).filter(item => item.skill === 'product_judgment' && item.status === 'active');
