@@ -1,4 +1,4 @@
-const CACHE_NAME = 'learning-pwa-v0.6.0';
+const CACHE_NAME = 'learning-pwa-v0.6.1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -24,6 +24,18 @@ const APP_SHELL = [
   './cards.js',
   './platform-data.js',
   './assets/retail-spatial-case-01.svg',
+  './assets/official/pura90/pura90_roland-purple.png',
+  './assets/official/pura90/pura90_snow-white.png',
+  './assets/official/pura90/pura90_velvet-black.png',
+  './assets/official/pura90/pura90pro_pink-guava.png',
+  './assets/official/pura90/pura90pro_orange-soda.png',
+  './assets/official/pura90/pura90pro_coconut-white.png',
+  './assets/official/pura90/pura90pro_mulberry-black.png',
+  './assets/official/pura90/pura90promax_orange-sea.png',
+  './assets/official/pura90/pura90promax_glow-purple.png',
+  './assets/official/pura90/pura90promax_jade-lake.png',
+  './assets/official/pura90/pura90promax_dawn-gold.png',
+  './assets/official/pura90/pura90promax_obsidian-black.png',
   './manifest.webmanifest',
   './icon.svg',
 ];
