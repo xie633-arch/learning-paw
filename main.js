@@ -89,3 +89,7 @@ if (koreanDomainName) {
     characterData: true,
   });
 }
+
+// V0.8 turns the long dashboard into real tab views and replaces the misleading
+// "all unseen cards are due" presentation with a bounded daily review plan.
+await import('./ux-v08.js');
