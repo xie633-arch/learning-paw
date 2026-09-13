@@ -1,0 +1,113 @@
+{
+  "purpose": "Pura 90 family model and color selector official assets",
+  "assets": [
+    {
+      "id": "pura90-purple",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-1.png",
+      "filename": "pura90_roland-purple.png",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90-white",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-2.png",
+      "filename": "pura90_snow-white.png",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90-black",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90/img/design/design-color-phone-3.png",
+      "filename": "pura90_velvet-black.png",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90pro-guava",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-1.png",
+      "filename": "pura90pro_pink-guava.png",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90pro-orange",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-2.png",
+      "filename": "pura90pro_orange-soda.png",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90pro-white",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-3.png",
+      "filename": "pura90pro_coconut-white.png",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90pro-black",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro/img/design/design-color-phone-4.png",
+      "filename": "pura90pro_mulberry-black.png",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90promax-orange",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro-max/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-1.jpg",
+      "filename": "pura90promax_orange-sea.jpg",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90promax-purple",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro-max/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-2.jpg",
+      "filename": "pura90promax_glow-purple.jpg",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90promax-green",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro-max/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-3.jpg",
+      "filename": "pura90promax_jade-lake.jpg",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90promax-gold",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro-max/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-4.jpg",
+      "filename": "pura90promax_dawn-gold.jpg",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    },
+    {
+      "id": "pura90promax-black",
+      "required": true,
+      "source_page": "https://consumer.huawei.com/cn/phones/pura90-pro-max/",
+      "image_url": "https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/pura90-pro-max/img/design/design-color-5.jpg",
+      "filename": "pura90promax_obsidian-black.jpg",
+      "target_dir": "assets/official/pura90",
+      "source_label": "华为官网"
+    }
+  ]
+}
