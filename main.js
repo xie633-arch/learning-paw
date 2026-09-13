@@ -78,6 +78,10 @@ if (phoneKnowledgeCard && routeCard && !routeCard.contains(phoneKnowledgeCard)) 
 // It lives inside the Knowledge Base so browsing facts does not inflate today's FSRS workload.
 await import('./phone-product-lab-v091.js');
 
+// V0.10 closes the adaptive loop: Product Lab attempts -> StudyEvent -> Error Bank
+// -> Concept remediation -> revalidation -> resolved ErrorRecord.
+await import('./phone-adaptive-v10.js');
+
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
   if (domainName?.textContent?.trim() !== '韩语') return;
