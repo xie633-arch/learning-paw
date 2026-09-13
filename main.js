@@ -46,8 +46,8 @@ await import('./mobile-domain-grid-v051.js');
 await import('./official-visual-gallery-v051.js');
 await import('./lesson-official-visuals-v052.js');
 
-// V0.6 product-learning interaction: ecommerce-style model + color variants.
-await import('./pura90-variant-gallery-v06.js');
+// V0.7 product-learning interaction: one ecommerce-style Variant catalog for all current phone families.
+await import('./phone-family-variant-gallery-v07.js');
 
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
