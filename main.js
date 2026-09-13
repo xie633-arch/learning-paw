@@ -40,6 +40,11 @@ await import('./korean-lesson-content-v05.js');
 await import('./v04-boot.js');
 await import('./v04-schema-align.js');
 
+// V0.9 Phone Knowledge Base: build a large Concept Tree, while only allowing a
+// small starter set into review after the product-portfolio lesson is complete.
+await import('./phone-knowledge-v09.js');
+await import('./phone-knowledge-gate-v091.js');
+
 // Migrate legacy history/test results into StudyEvent v1 + Assessment Attempt
 // before app.js reads localStorage, while keeping the current UI backward-compatible.
 await import('./learner-data-v1.js');
@@ -61,6 +66,13 @@ await import('./lesson-official-visuals-v052.js');
 await import('./phone-family-variant-gallery-v07.js');
 // Price data changes more frequently than product imagery, so keep it as a small independent verified layer.
 await import('./phone-family-pricing-v071.js');
+
+// V0.9 searchable phone-tech library. Keep it inside the Route card so the V0.8
+// tab controller treats it as part of the Route view rather than a floating page.
+await import('./phone-knowledge-ui-v09.js');
+const phoneKnowledgeCard = document.querySelector('#phoneKnowledgeCard');
+const routeCard = document.querySelector('#routeCard');
+if (phoneKnowledgeCard && routeCard && !routeCard.contains(phoneKnowledgeCard)) routeCard.append(phoneKnowledgeCard);
 
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
