@@ -24,6 +24,7 @@ try {
   }));
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(window.__PHONE_PRODUCT_LAB_V091__));
   const meta = await page.evaluate(() => window.__PHONE_PRODUCT_LAB_V091__ || null);
   assert(meta?.version === '0.9.1', `Product Lab metadata missing: ${JSON.stringify(meta)}`);
   assert(meta?.cases === 5, `expected 5 Product Lab cases, got ${meta?.cases}`);
