@@ -19,6 +19,15 @@ class FakeStorage {
 globalThis.Storage = FakeStorage;
 globalThis.window = globalThis;
 globalThis.window.localStorage = new FakeStorage();
+globalThis.window.dispatchEvent = () => true;
+if (typeof globalThis.CustomEvent === 'undefined') {
+  globalThis.CustomEvent = class CustomEvent {
+    constructor(type, options = {}) {
+      this.type = type;
+      this.detail = options.detail;
+    }
+  };
+}
 globalThis.document = {
   querySelector() { return null; },
   body: { append() {} },
@@ -57,7 +66,7 @@ window.localStorage.setItem(STORAGE_KEY, JSON.stringify(firstLegacyState));
 await import('../learner-data-v1.js');
 
 let migrated = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
-if (migrated.version < 4) throw new Error('State version was not upgraded.');
+if (migrated.version < 5) throw new Error('State version was not upgraded.');
 if (migrated.studyEvents?.length !== 1) throw new Error('Legacy history was not migrated to one StudyEvent.');
 if (migrated.studyEvents[0].result?.rating !== 'again') throw new Error('StudyEvent rating was not preserved.');
 if (!migrated.errorRecords?.length) throw new Error('Again rating did not generate an ErrorRecord.');
