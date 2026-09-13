@@ -33,6 +33,9 @@ await import('./mobile-domain-grid-v051.js');
 await import('./official-visual-gallery-v051.js');
 await import('./lesson-official-visuals-v052.js');
 
+// V0.6 product-learning interaction: ecommerce-style model + color variants.
+await import('./pura90-variant-gallery-v06.js');
+
 const syncKoreanRuntimeCopy = () => {
   const domainName = document.querySelector('#domainName');
   if (domainName?.textContent?.trim() !== '韩语') return;
