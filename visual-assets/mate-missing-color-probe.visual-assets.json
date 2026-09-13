@@ -1,0 +1,11 @@
+{
+  "purpose": "Verify missing Mate 80 family full-size color heroes for ecommerce variant gallery.",
+  "assets": [
+    {"id":"mate80pm-blue","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-pro-max/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80-pro-max/list/blue.png","filename":"blue.png","target_dir":"assets/official/mate80-pro-max"},
+    {"id":"mate80pm-green","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-pro-max/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80-pro-max/list/green.png","filename":"green.png","target_dir":"assets/official/mate80-pro-max"},
+    {"id":"mate80pm-teal","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-pro-max/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80-pro-max/list/teal.png","filename":"teal.png","target_dir":"assets/official/mate80-pro-max"},
+    {"id":"maters-white-full","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-rs-ultimate-design/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80-rs-ultimate-design/list/white.png","filename":"white-full.png","target_dir":"assets/official/mate80-rs"},
+    {"id":"maters-black-full","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-rs-ultimate-design/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80-rs-ultimate-design/list/black.png","filename":"black-full.png","target_dir":"assets/official/mate80-rs"},
+    {"id":"maters-purple-full","required":false,"source_page":"https://consumer.huawei.com/cn/phones/mate80-rs-ultimate-design/","image_url":"https://consumer.huawei.com/content/dam/huawei-cbg-site/cn/mkt/pdp/phones/mate80-rs-ultimate-design/list/purple.png","filename":"purple-full.png","target_dir":"assets/official/mate80-rs"}
+  ]
+}
