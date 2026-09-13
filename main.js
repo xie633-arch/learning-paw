@@ -2,7 +2,7 @@ await import('./korean-v04.js');
 
 // Keep the running Korean module aligned with the Obsidian decision:
 // Learning Paw schedules/records speaking tasks; continuous voice practice happens in ChatGPT Voice.
-const { curricula, domainOverrides } = await import('./platform-data.js');
+const { curricula, domainOverrides, visualSources } = await import('./platform-data.js');
 const koreanSteps = curricula.korean?.steps || [];
 koreanSteps.forEach(step => {
   (step.activities || []).forEach(activity => {
@@ -17,6 +17,15 @@ if (domainOverrides.korean) {
     { label: 'ChatGPT Voice 每日任务', status: '可用' },
     { label: '每日 Exit Check + Day 0 / 7 / 14 / 21 / 28 阶段验收', status: '可用' },
   ];
+}
+
+// Keep the generic fallback aligned with the current phone generation too.
+// The richer official gallery replaces this UI later, but a failed enhancement must never fall back to Pura 80.
+const legacyPuraSource = visualSources.phone?.find(item => item.name === 'HUAWEI Pura 80');
+if (legacyPuraSource) {
+  legacyPuraSource.name = 'HUAWEI Pura 90';
+  legacyPuraSource.url = 'https://consumer.huawei.com/cn/phones/pura90/';
+  legacyPuraSource.focus = 'Pura 90 系列影像、设计语言与当前产品视觉辨识';
 }
 
 await import('./korean-voice-v04.js');
