@@ -33,19 +33,24 @@ function launchAssessment() {
 function syncGuards() {
   const korean = isKorean();
   const genericComplete = document.querySelector('#completeLessonBtn');
-  if (genericComplete) genericComplete.style.display = korean ? 'none' : '';
+  const completeDisplay = korean ? 'none' : '';
+  if (genericComplete && genericComplete.style.display !== completeDisplay) {
+    genericComplete.style.display = completeDisplay;
+  }
 
+  const routeDisplay = korean ? 'none' : '';
   document.querySelectorAll('#routeList .route-toggle').forEach(button => {
-    button.style.display = korean ? 'none' : '';
+    if (button.style.display !== routeDisplay) button.style.display = routeDisplay;
   });
 
   const readerPrimary = document.querySelector('#koreanLessonReaderOverlay .korean-reader-actions .primary');
   if (readerPrimary && korean) {
     const lesson = currentLesson();
     if (lesson) {
-      readerPrimary.textContent = assessmentLessons.has(lesson.id)
+      const nextLabel = assessmentLessons.has(lesson.id)
         ? (lesson.id === 'ko-day-000' ? '开始 Day 0 入学基线' : '进行阶段验收')
         : (hasKoreanExitCheck(lesson.id) ? '完成 Exit Check 后进入下一课' : '我已完成本课');
+      if (readerPrimary.textContent !== nextLabel) readerPrimary.textContent = nextLabel;
     }
   }
 }
@@ -72,11 +77,20 @@ reader?.addEventListener('click', event => {
   }
 }, true);
 
-const sync = () => queueMicrotask(syncGuards);
+let syncQueued = false;
+function scheduleSync() {
+  if (syncQueued) return;
+  syncQueued = true;
+  queueMicrotask(() => {
+    syncQueued = false;
+    syncGuards();
+  });
+}
+
 syncGuards();
 ['#domainName','#todayLessonTitle','#routeList','#koreanReaderBody'].forEach(selector => {
   const node = document.querySelector(selector);
-  if (node) new MutationObserver(sync).observe(node,{childList:true,subtree:true,characterData:true});
+  if (node) new MutationObserver(scheduleSync).observe(node,{childList:true,subtree:true,characterData:true});
 });
 
-window.__KOREAN_COMPLETION_GUARD_V06__ = { version:'0.6.1' };
+window.__KOREAN_COMPLETION_GUARD_V06__ = { version:'0.6.2' };
