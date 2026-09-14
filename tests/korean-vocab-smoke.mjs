@@ -1,15 +1,38 @@
-import '../korean-v04.js';
-import '../korean-hangul-gate-v07.js';
-import { curricula } from '../platform-data.js';
+import { curricula, domainOverrides } from '../platform-data.js';
 import { koreanAssessments, koreanAssessmentStages } from '../korean-assessment-data-v05.js';
-import { KOREAN_VOCAB_ITEMS_V15, buildVocabCard, vocabTrainingMode, unlockedVocabItems } from '../korean-vocab-v15.js';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+// Build the smallest browser-free pre-gate curriculum fixture. korean-v04.js owns
+// DOM copy as well as data, so Node unit tests should not import that browser module.
+curricula.korean = {
+  title: 'fixture',
+  source: 'fixture',
+  steps: Array.from({ length: 9 }, (_, day) => ({
+    id: `ko-day-${String(day).padStart(3, '0')}`,
+    lesson_id: `ko-day-${String(day).padStart(3, '0')}`,
+    title: `Day ${day}`,
+    summary: `fixture ${day}`,
+    keyPoints: [],
+    task: 'fixture',
+    output: 'fixture',
+  })),
+};
+domainOverrides.korean = { status:'active', statusLabel:'可学习', description:'fixture', modes:[] };
+
+await import('../korean-hangul-gate-v07.js');
+const {
+  KOREAN_VOCAB_ITEMS_V15,
+  buildVocabCard,
+  vocabTrainingMode,
+  unlockedVocabItems,
+} = await import('../korean-vocab-v15.js');
+
 assert(curricula.korean.steps[0]?.id === 'ko-hangul-gate', `Korean route should begin with Hangul gate, got ${curricula.korean.steps[0]?.id}`);
 assert(!curricula.korean.steps.some(step => /^ko-day-00[1-7]$/.test(step.id)), 'old in-app Hangul Day 1-7 lessons should be removed from the primary route');
+assert(curricula.korean.steps.some(step => step.id === 'ko-day-008'), 'post-gate curriculum should retain Day 8 and later lessons');
 assert(koreanAssessmentStages[0]?.id === 'hangulGate', `first Korean assessment stage should be hangulGate, got ${koreanAssessmentStages[0]?.id}`);
 assert(koreanAssessments.hangulGate?.pass_rule?.total_min === 85, 'Hangul gate pass score should be 85');
 assert(koreanAssessments.hangulGate?.pass_rule?.section_min_ratio?.hangul_recognition === 0.8, 'Hangul recognition floor should be 80%');
