@@ -132,7 +132,13 @@ try {
 
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
   await page.locator('[data-domain="korean"]').click();
+  await page.waitForFunction(() => document.querySelector('#domainName')?.textContent?.trim() === '韩语');
   await page.locator('#mobileBottomNav button[data-target="weakCard"]').click();
+  await page.locator('#adaptiveLearningV11').waitFor({ state: 'visible' });
+  // The test injects storage directly, bypassing the real Exit Check UI. Force the
+  // public Error Bank renderer once the Korean domain is active so we assert the
+  // same settled state a real user sees after the learning-data update cycle.
+  await page.evaluate(() => window.__ADAPTIVE_LEARNING_V11__?.render());
   const koreanRow = page.locator(`[data-adaptive-error="${koreanErrorId}"]`);
   await koreanRow.waitFor({ state: 'visible' });
   const koreanRowText = (await koreanRow.textContent()) || '';
