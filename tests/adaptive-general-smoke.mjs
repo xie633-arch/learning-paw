@@ -22,6 +22,7 @@ try {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__ADAPTIVE_METADATA_V11__?.version === '0.11.2');
   await page.waitForFunction(() => window.__ADAPTIVE_LEARNING_V11__?.version === '0.11.0');
+  await page.waitForFunction(() => window.__KOREAN_STAGE_ADAPTIVE_V112__?.version === '0.11.2');
 
   // 1) Ordinary recall: an "again" rating becomes a recall-gap ErrorRecord.
   await page.evaluate(key => {
@@ -123,12 +124,20 @@ try {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
     return (state.errorRecords || []).some(record => record.concept_id === 'korean-ko-day-008-01' && record.status === 'active');
   }, STORAGE_KEY);
+  const koreanErrorId = await page.evaluate(key => {
+    const state = JSON.parse(localStorage.getItem(key) || '{}');
+    return (state.errorRecords || []).find(record => record.concept_id === 'korean-ko-day-008-01' && record.status === 'active')?.error_id || null;
+  }, STORAGE_KEY);
+  assert(koreanErrorId, 'Korean Exit Check ErrorRecord has no stable error_id');
+
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
   await page.locator('[data-domain="korean"]').click();
   await page.locator('#mobileBottomNav button[data-target="weakCard"]').click();
-  const koreanRow = page.locator('.al-error').filter({ hasText: '下面哪个词有 받침？' });
+  const koreanRow = page.locator(`[data-adaptive-error="${koreanErrorId}"]`);
   await koreanRow.waitFor({ state: 'visible' });
-  assert(await koreanRow.count() === 1, 'Korean Exit Check error did not appear in generic Error Bank');
+  const koreanRowText = (await koreanRow.textContent()) || '';
+  assert(koreanRowText.includes('下面哪个词有 받침？'), `Korean Exit Check row lost authored prompt metadata: ${koreanRowText}`);
+  assert(await koreanRow.locator('[data-adaptive-revalidate]').count() === 1, 'Korean Exit Check error is not actionable in generic Error Bank');
   await koreanRow.locator('[data-adaptive-revalidate]').click();
   const koreanOptions = page.locator('#adaptiveLearningOverlay .al-option');
   await koreanOptions.nth(2).click();
