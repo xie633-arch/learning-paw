@@ -41,39 +41,45 @@ try {
   let text = (await page.locator('#recommendationFocusV13').textContent()) || '';
   assert(text.includes('无需插队'), `fresh learner should not receive fabricated weakness recommendation: ${text}`);
 
+  // Write the canonical learning fact only. learner-data-v1 must derive LearnerSignal + ErrorRecord,
+  // and the recommendation layer must consume those derived facts rather than test-only state mutations.
   await page.evaluate(key => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
-    state.learnerSignals = state.learnerSignals || {};
-    state.errorRecords = Array.isArray(state.errorRecords) ? state.errorRecords : [];
-    state.learnerSignals['retail.need-state::need-state'] = {
-      concept_id: 'retail.need-state',
-      content_id: 'retail-foundation-01',
-      domain: 'retail',
-      skill: 'need-state',
-      attempts: 4,
-      ratings: { good: 0, hard: 0, again: 0 },
-      assessment: { correct: 1, incorrect: 3 },
-      revalidations: { passed: 0, failed: 0 },
-      last_seen_at: new Date().toISOString(),
-    };
-    state.errorRecords = state.errorRecords.filter(record => record.error_id !== 'err-rec-ui-retail');
-    state.errorRecords.push({
-      error_id: 'err-rec-ui-retail',
-      concept_id: 'retail.need-state',
-      content_id: 'retail-foundation-01',
-      domain: 'retail',
-      skill: 'need-state',
-      error_type: 'assessment_error',
-      severity: 'high',
-      occurrences: 3,
-      status: 'active',
-      last_seen_at: new Date().toISOString(),
-    });
+    state.studyEvents = Array.isArray(state.studyEvents) ? state.studyEvents : [];
+    const now = new Date().toISOString();
+    for (let i = 0; i < 3; i += 1) {
+      state.studyEvents.push({
+        schema_version: '1.0',
+        event_id: `evt-rec-ui-retail-error-${i + 1}`,
+        occurred_at: now,
+        domain: 'retail',
+        event_type: 'assessment_attempt',
+        content_id: 'retail-foundation-01',
+        concept_id: 'retail.need-state',
+        skill: 'need-state',
+        result: { rating: null, correct: false, score: 0, max_score: 10, confidence: null },
+        duration_ms: null,
+        session_id: 'recommendation-ui-smoke',
+        source: 'recommendation_ui_smoke',
+        device_id: null,
+        algorithm: 'objective_scoring',
+        assessment_id: 'retail-foundation-100-v1',
+      });
+    }
     localStorage.setItem(key, JSON.stringify(state));
-    window.dispatchEvent(new Event('learning-data-updated'));
   }, STORAGE_KEY);
 
+  await page.waitForFunction(key => {
+    const state = JSON.parse(localStorage.getItem(key) || '{}');
+    return (state.errorRecords || []).some(record =>
+      record.domain === 'retail'
+      && record.concept_id === 'retail.need-state'
+      && record.status === 'active'
+      && record.occurrences >= 3
+    );
+  }, STORAGE_KEY);
   await page.waitForFunction(() => window.__RECOMMENDATION_UI_V13__?.current?.top?.concept_id === 'retail.need-state');
+
   text = (await page.locator('#recommendationFocusV13').textContent()) || '';
   assert(text.includes('高优先级'), `strong learner evidence should surface high priority: ${text}`);
   assert(text.includes('针对性复习后重验证'), `recommendation action missing: ${text}`);
@@ -84,24 +90,47 @@ try {
   text = (await page.locator('#recommendationFocusV13').textContent()) || '';
   assert(text.includes('无需插队'), `retail recommendation leaked into industry: ${text}`);
 
-  // Once the same Concept × Skill is resolved through successful revalidation, the focus disappears.
+  // Resolve using a canonical successful revalidation fact, not by editing ErrorRecord directly.
   await selectDomain('retail');
   await page.evaluate(key => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
-    const signal = state.learnerSignals?.['retail.need-state::need-state'];
-    if (signal) signal.revalidations = { passed: 1, failed: 0 };
-    const record = (state.errorRecords || []).find(item => item.error_id === 'err-rec-ui-retail');
-    if (record) record.status = 'resolved';
+    state.studyEvents = Array.isArray(state.studyEvents) ? state.studyEvents : [];
+    state.studyEvents.push({
+      schema_version: '1.0',
+      event_id: 'evt-rec-ui-retail-revalidation-pass',
+      occurred_at: new Date().toISOString(),
+      domain: 'retail',
+      event_type: 'assessment_attempt',
+      content_id: 'retail-foundation-01',
+      concept_id: 'retail.need-state',
+      skill: 'need-state',
+      result: { rating: null, correct: true, score: 10, max_score: 10, confidence: null },
+      duration_ms: null,
+      session_id: 'recommendation-ui-smoke-revalidation',
+      source: 'recommendation_ui_smoke',
+      device_id: null,
+      algorithm: 'objective_scoring',
+      assessment_id: 'retail-foundation-100-v1',
+      revalidation: true,
+      revalidation_error_type: 'assessment_error',
+    });
     localStorage.setItem(key, JSON.stringify(state));
-    window.dispatchEvent(new Event('learning-data-updated'));
   }, STORAGE_KEY);
 
+  await page.waitForFunction(key => {
+    const state = JSON.parse(localStorage.getItem(key) || '{}');
+    return (state.errorRecords || []).some(record =>
+      record.domain === 'retail'
+      && record.concept_id === 'retail.need-state'
+      && record.status === 'resolved'
+    );
+  }, STORAGE_KEY);
   await page.waitForFunction(() => !window.__RECOMMENDATION_UI_V13__?.current?.top);
   text = (await page.locator('#recommendationFocusV13').textContent()) || '';
   assert(text.includes('无需插队'), `resolved recommendation stayed visible: ${text}`);
 
   await context.close();
-  console.log('Recommendation UI smoke OK: Today Plan shows explainable Concept×Skill focus, stays domain-scoped, and removes resolved weaknesses.');
+  console.log('Recommendation UI smoke OK: canonical StudyEvents drive explainable focus, domain isolation, and resolved-state removal.');
 } finally {
   await browser.close();
 }
