@@ -46,8 +46,10 @@ function patchRoute(state, domainId) {
   if (!curriculum || !routeList) return null;
 
   const progress = deriveRouteProgress(state, domainId, curriculum);
-  if (progressText) progressText.textContent = `完成 ${progress.completed} / ${progress.total}`;
-  if (todayProgress) todayProgress.textContent = `${progress.completed} / ${progress.total}`;
+  const routeLabel = `完成 ${progress.completed} / ${progress.total}`;
+  const todayLabel = `${progress.completed} / ${progress.total}`;
+  if (progressText && progressText.textContent !== routeLabel) progressText.textContent = routeLabel;
+  if (todayProgress && todayProgress.textContent !== todayLabel) todayProgress.textContent = todayLabel;
 
   routeList.querySelectorAll('[data-step-id]').forEach(button => {
     const stepId = button.dataset.stepId;
@@ -59,9 +61,11 @@ function patchRoute(state, domainId) {
     const indexNode = item?.querySelector('.route-index');
     if (indexNode) {
       const stepIndex = (curriculum.steps || []).findIndex(step => (step.id || step.lesson_id) === stepId);
-      indexNode.textContent = done ? '✓' : String(stepIndex + 1);
+      const nextIndex = done ? '✓' : String(stepIndex + 1);
+      if (indexNode.textContent !== nextIndex) indexNode.textContent = nextIndex;
     }
-    button.textContent = done ? '取消完成' : '标记完成';
+    const nextButtonText = done ? '取消完成' : '标记完成';
+    if (button.textContent !== nextButtonText) button.textContent = nextButtonText;
   });
 
   return progress;
