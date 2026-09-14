@@ -52,6 +52,9 @@ await import('./adaptive-metadata-v11.js');
 // Migrate legacy history/test results into StudyEvent v1 + Assessment Attempt
 // before app.js reads localStorage, while keeping the current UI backward-compatible.
 await import('./learner-data-v1.js');
+// V0.11.1 upgrades already-migrated formal-test attempts/events with stable
+// concept and skill metadata so existing learner history also becomes actionable.
+await import('./formal-test-adapter-v111.js');
 await import('./app.js');
 await import('./korean-voice-ui-v04.js');
 
