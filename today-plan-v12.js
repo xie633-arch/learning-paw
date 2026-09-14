@@ -1,8 +1,13 @@
 import { cards as baseCards } from './cards.js';
 import { curricula, extraCards, tests } from './platform-data.js';
+import {
+  deriveTodayPracticeStats,
+  deriveCompletedLessons,
+  hasCompletedAssessment,
+} from './study-event-read-model-v12.js';
 
 const STORAGE_KEY = 'personal-learning-os:v0.1';
-const VERSION = '0.12.0';
+const VERSION = '0.12.1';
 
 export const DAILY_REVIEW_LIMIT = 10;
 export const DAILY_NEW_LIMIT = 5;
@@ -60,9 +65,34 @@ function historyDomain(item, cardById) {
   return 'unknown';
 }
 
-function assessmentPlan(domainId, state, curriculum, currentLesson, completedSteps) {
-  const attempts = asArray(state.assessmentAttempts);
+function legacyPracticeStats(state, domainId, cards, dayKey) {
+  const history = asArray(state.history);
+  const cardById = new Map(cards.map(card => [card.id || card.card_id, card]));
+  const todayHistory = history.filter(item => item.day === dayKey && historyDomain(item, cardById) === domainId);
+  const beforeTodayIds = new Set(
+    history
+      .filter(item => item.day !== dayKey && historyDomain(item, cardById) === domainId)
+      .map(item => item.cardId || item.card_id)
+      .filter(Boolean),
+  );
+  const newTodayIds = new Set(
+    todayHistory
+      .filter(item => {
+        const id = item.cardId || item.card_id;
+        return id && !beforeTodayIds.has(id);
+      })
+      .map(item => item.cardId || item.card_id),
+  );
+  return {
+    source: 'history-compat',
+    reviewedToday: todayHistory.length,
+    knownToday: todayHistory.filter(item => item.rating === 'good').length,
+    newToday: newTodayIds.size,
+    eventCount: todayHistory.length,
+  };
+}
 
+function assessmentPlan(domainId, state, curriculum, currentLesson, completedSteps) {
   if (domainId === 'korean') {
     const milestone = currentLesson ? KOREAN_STAGE_MILESTONES[currentLesson.id] : null;
     if (!milestone) {
@@ -74,7 +104,10 @@ function assessmentPlan(domainId, state, curriculum, currentLesson, completedSte
         assessmentId: null,
       };
     }
-    const completed = attempts.some(attempt => attempt.assessment_id === milestone.assessmentId && attempt.completed_at);
+    const completed = hasCompletedAssessment(state, {
+      domainId: 'korean',
+      assessmentId: milestone.assessmentId,
+    });
     return {
       kind: 'staged',
       available: true,
@@ -90,14 +123,15 @@ function assessmentPlan(domainId, state, curriculum, currentLesson, completedSte
   }
 
   const curriculumComplete = Boolean(curriculum?.steps?.length) && completedSteps >= curriculum.steps.length;
-  const priorTest = asArray(state.testResults).some(result => (result.domainId || result.domain) === domainId);
-  const priorAttempt = attempts.some(attempt => attempt.domain === domainId && attempt.completed_at);
+  const assessmentId = assessment.assessment_id || `${domainId}-foundation-100-v1`;
+  const priorLegacyTest = asArray(state.testResults).some(result => (result.domainId || result.domain) === domainId);
+  const completed = hasCompletedAssessment(state, { domainId, assessmentId }) || priorLegacyTest;
   return {
     kind: 'formal',
     available: true,
-    recommended: curriculumComplete && !priorTest && !priorAttempt,
-    label: curriculumComplete && !priorTest && !priorAttempt ? '建议完成首次 100 分验收' : '100 分验收可用',
-    assessmentId: assessment.assessment_id || `${domainId}-foundation-100-v1`,
+    recommended: curriculumComplete && !completed,
+    label: curriculumComplete && !completed ? '建议完成首次 100 分验收' : '100 分验收可用',
+    assessmentId,
   };
 }
 
@@ -114,41 +148,29 @@ export function buildTodayPlan({
   if (!domainId || !DOMAIN_LABELS[domainId]) throw new Error(`Unknown learning domain: ${domainId || 'missing'}`);
 
   const schedules = asObject(state.schedules);
-  const history = asArray(state.history);
-  const progress = asObject(state.lessonProgress);
   const errorRecords = asArray(state.errorRecords);
-  const timestamp = now instanceof Date ? now.getTime() : new Date(now).getTime();
-  const dayKey = localDayKey(now instanceof Date ? now : new Date(now));
+  const nowDate = now instanceof Date ? now : new Date(now);
+  const timestamp = nowDate.getTime();
+  const dayKey = localDayKey(nowDate);
   const domainCards = cards.filter(card => card.domain === domainId);
-  const cardById = new Map(cards.map(card => [card.id || card.card_id, card]));
 
   const steps = asArray(curriculum?.steps);
-  const completedSteps = steps.filter(step => Boolean(progress[step.id])).length;
-  const currentLesson = steps.find(step => !progress[step.id]) || null;
+  const completedLessonIds = deriveCompletedLessons(state, domainId);
+  const completedSteps = steps.filter(step => completedLessonIds.has(step.id)).length;
+  const currentLesson = steps.find(step => !completedLessonIds.has(step.id)) || null;
 
   const scheduledDue = domainCards
     .filter(card => schedules[card.id] && dueTimestamp(schedules[card.id]) <= timestamp)
     .sort((a, b) => dueTimestamp(schedules[a.id]) - dueTimestamp(schedules[b.id]));
   const unseen = domainCards.filter(card => !schedules[card.id]);
 
-  const todayHistory = history.filter(item => item.day === dayKey && historyDomain(item, cardById) === domainId);
-  const beforeTodayIds = new Set(
-    history
-      .filter(item => item.day !== dayKey && historyDomain(item, cardById) === domainId)
-      .map(item => item.cardId || item.card_id)
-      .filter(Boolean),
-  );
-  const newTodayIds = new Set(
-    todayHistory
-      .filter(item => {
-        const id = item.cardId || item.card_id;
-        return id && !beforeTodayIds.has(id);
-      })
-      .map(item => item.cardId || item.card_id),
-  );
+  const eventPractice = deriveTodayPracticeStats(state, domainId, nowDate);
+  const legacyPractice = legacyPracticeStats(state, domainId, cards, dayKey);
+  const useStudyEvents = eventPractice.eventCount > 0 || asArray(state.history).length === 0;
+  const practice = useStudyEvents ? eventPractice : legacyPractice;
 
-  const remainingReview = Math.max(0, dailyReviewLimit - todayHistory.length);
-  const remainingNew = Math.max(0, dailyNewLimit - newTodayIds.size);
+  const remainingReview = Math.max(0, dailyReviewLimit - practice.reviewedToday);
+  const remainingNew = Math.max(0, dailyNewLimit - practice.newToday);
   const duePlanned = Math.min(scheduledDue.length, remainingReview);
   const newPlanned = Math.min(unseen.length, remainingNew, Math.max(0, remainingReview - duePlanned));
 
@@ -182,12 +204,15 @@ export function buildTodayPlan({
       completed: completedSteps,
       total: steps.length,
       complete: steps.length > 0 && completedSteps >= steps.length,
+      source: completedLessonIds.size > 0 ? 'StudyEvent + compatibility bridge' : 'curriculum',
     },
     review: {
+      source: practice.source,
       scheduledDue: scheduledDue.length,
       unseen: unseen.length,
-      reviewedToday: todayHistory.length,
-      newToday: newTodayIds.size,
+      reviewedToday: practice.reviewedToday,
+      knownToday: practice.knownToday,
+      newToday: practice.newToday,
       duePlanned,
       newPlanned,
       count: duePlanned + newPlanned,
@@ -196,6 +221,7 @@ export function buildTodayPlan({
       dailyNewLimit,
     },
     revalidation: {
+      source: 'ErrorRecord',
       active: activeErrors.length,
       highSeverity: activeErrors.filter(record => record.severity === 'high').length,
       planned: plannedErrors.length,
@@ -254,11 +280,19 @@ function ensureShell() {
   return shell;
 }
 
+function syncHeroStats(plan) {
+  const reviewed = document.querySelector('#reviewedToday');
+  const known = document.querySelector('#knownToday');
+  if (reviewed) reviewed.textContent = String(plan.review.reviewedToday);
+  if (known) known.textContent = String(plan.review.knownToday);
+}
+
 function render() {
   const shell = ensureShell();
   if (!shell) return null;
   const domainId = selectedDomainId();
   const plan = buildTodayPlan({ domainId, state: readState() });
+  syncHeroStats(plan);
 
   const lessonText = plan.lesson.current
     ? plan.lesson.current.title
@@ -269,9 +303,7 @@ function render() {
   const weakText = plan.revalidation.planned > 0
     ? `${plan.revalidation.planned} 项优先重验证${plan.revalidation.active > plan.revalidation.planned ? `（共 ${plan.revalidation.active} 项 active）` : ''}`
     : '当前没有需要重验证的错误';
-  const assessmentText = plan.assessment.recommended
-    ? plan.assessment.label
-    : plan.assessment.label || '当前无需额外验收';
+  const assessmentText = plan.assessment.label || '当前无需额外验收';
 
   shell.innerHTML = `
     <div class="tp12-head"><strong>统一 Today Plan</strong><span class="tp12-badge">${plan.workload.actionGroups} 个行动组</span></div>
