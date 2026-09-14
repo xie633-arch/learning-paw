@@ -1,195 +1,199 @@
-# Personal Learning OS
+# Learning Paw · Personal Learning OS
 
-一个面向手机与电脑的个人学习 PWA。
+Learning Paw 是一个面向手机与电脑的个人学习 PWA。它不是几套题库拼在一起，而是一套由多个学习领域共同复用的学习引擎。
 
-V0.5 的核心链路：
+当前四个正式领域：
 
-**完整课程正文 → 主动回忆 → FSRS → ChatGPT Voice → 薄弱专项 → 正式测试 → 再学习**
+- 📱 **手机产品专家**：产品知识、参数 → 体验、用户场景、竞品、零售 GTM、上市与经营判断；
+- 🇰🇷 **韩语**：Day 0–28 课程、听说读写、Exit Check、阶段验收与 ChatGPT Voice 任务；
+- 🗺️ **商圈与零售**：用户、JTBD、商圈空间、门店、陈列、Demo、O2O、活动与经营诊断；
+- 🌍 **行业与商业**：市场、品牌、产品组合、价格权益、渠道、商业模式、证据与战略判断。
 
-## 当前领域
+完整平台架构见 [`docs/PLATFORM_ARCHITECTURE.md`](docs/PLATFORM_ARCHITECTURE.md)。
 
-- 📱 **手机产品专家**：硬件、系统串联、参数 → 体验、用户场景、竞品、零售 GTM、上市与经营。
-- 🇰🇷 **韩语**：Day 0–28 已有完整站内课程正文、Lesson Unlock、Week 1 正式训练卡、每日 ChatGPT Voice Prompt，并按周提供世宗学堂官方可打印 PDF 下载入口；长期目标为 2027 TOPIK II 4级、能力允许冲刺5级。
-- 🗺️ **商圈与零售**：用户、JTBD、商圈空间、门店、陈列、Demo、O2O、活动与经营诊断。
-- 🌍 **行业与商业**：市场、品牌、产品组合、价格权益、渠道、商业模式、真实市场证据与战略判断。
+## 平台主闭环
 
-## V0.5 当前能力
-
-### 1. Schema v1
-
-`schemas/` 包含：
-
-- `content.schema.json`
-- `curriculum.schema.json`
-- `study-event.schema.json`
-- `assessment.schema.json`
-
-公开 JSON Schema 与私有 Obsidian 中 `80_Learning_PWA/10_Data_Schema/` 的正式定义保持对齐。Day 0 作为基线索引允许 `day_index = 0`；长期仍计划把 Day 0 从普通课程壳升级成真正的 `purpose: baseline` Assessment。
-
-### 2. 韩语 Curriculum + 完整 Lesson Reader
-
-`korean-v04.js` 提供 Day 0–28 Curriculum：
-
-- Day 0：入学基线；
-- Week 1：韩文系统与基础声音；
-- Week 2：받침、音变与第一批真实表达；
-- Week 3：句子结构、助词与高频动词；
-- Week 4：地点、兴趣、愿望、否定与日常表达；
-- Day 28：Month 1 阶段验收接口。
-
-`korean-lesson-content-v05.js` 已为 Day 0–28 全部课程补充可直接阅读的完整学习正文，不再要求用户自行查找教材内容。`korean-learning-ui-v05.js` 在韩语 Today Learning 中提供“开始今日韩语学习”，站内直接展示：
-
-- 当天知识讲解；
-- 例子与练习方法；
-- 学完检查点；
-- 当天任务与建议输出；
-- 每周官方打印资料；
-- 当日 ChatGPT Voice Task 与完整 Prompt。
-
-### 3. 韩语 Lesson Unlock
-
-`korean-content-v04.js` 负责 Curriculum 与 Practice 联动：
+所有领域共享同一条核心学习链路：
 
 ```text
-未来 Lesson 的新卡
-→ 不进入学习池
-
-当前 Lesson 的新卡
-→ 首次学习
-
-已经引入的 Card
-→ 交给 FSRS 决定何时复习
+Curriculum / Lesson
+        ↓
+Practice / Active Recall
+        ↓
+FSRS / Objective Assessment
+        ↓
+StudyEvent
+        ↓
+Learner Model
+        ↓
+ErrorRecord / Weak Signal
+        ↓
+Targeted Remediation
+        ↓
+Revalidation
+        ↓
+resolved / next learning action
 ```
 
-当前 Week 1 已加入韩文音节块、基础辅音/元音、送气音/紧音意识、复合元音、韩语键盘、真实词、听辨/听写与验收准备卡。旧版生活表达也已按 Curriculum 重新归档，例如问候语在 Day 12 才进入、`-고 싶어요` 在 Day 25 才进入。
+领域可以拥有自己的题型、内容和专项工具，但学习事实、弱项识别、重新验证和未来 Today Plan 必须落在同一套平台模型里。
 
-### 4. 每周官方可打印材料
+## 共享核心能力
 
-韩语不自制重复教材，也不链接来源不明网盘。V0.5 直接使用世宗学堂官方免费学习资源，并在 Lesson Reader 里标明“本周用哪一本、打印哪一部分”。
+### Curriculum + Lesson Content
 
-当前映射：
+四个领域都拥有站内学习路线和可直接学习的正文。Curriculum 决定“第一次什么时候学”，Lesson Content 负责真正的知识讲解、练习任务和学习输出。
 
-- **Week 1**：《세종학당 한국어 입문》——基础元音、辅音、送气音/紧音、复合元音；
-- **Week 2**：同一本入门教材——받침、겹받침、연음、常用表达；
-- **Week 3**：《세종한국어 1 익힘책》——第 1 课 자기소개、第 2 课 일상생활、第 3 课 위치；
-- **Week 4**：练习册 1–3 课综合复习，并按需参考《세종학당 한국어 1》初级教材。
+当前课程规模：
 
-网站按钮使用世宗学堂官方 PDF 下载页。官方页提供 PDF / E-book / 听力材料时直接从官方入口下载；不把第三方镜像文件复制进公开仓库。
+- 手机产品专家：8 个核心 Lesson；
+- 商圈与零售：8 个核心 Lesson；
+- 行业与商业：8 个核心 Lesson；
+- 韩语：Day 0–28，共 29 个 Lesson。
 
-### 5. ChatGPT Voice 分工
+### Practice + FSRS
 
-连续韩语语音对话不在 Learning Paw 里重复自建实时语音系统。
+Practice 用于主动回忆、听写、参数 → 体验、案例判断等训练。已经引入的可间隔复习内容优先交给 `ts-fsrs`；网络或依赖不可用时使用本地简化排程兜底。
 
-```text
-Learning Paw
-完整课程 / Lesson Unlock / FSRS / 今日 Voice Prompt / 错题与学习记录
-        ↓
-ChatGPT App Voice
-连续韩语对话 / 追问 / 情景陪练 / 适量纠错
-        ↓
-练习结束
-记录 1–3 个高价值错误或表达
-        ↓
-Error Bank / 后续复习
-```
+平台原则：**题库存在不等于今天就必须学习。** Curriculum 控制新知识引入，FSRS 管理已经学习过的内容何时回来。
 
-Day 0–28 已经全部提供每日 Voice Task。Prompt 包含场景、当前水平边界、目标内容、建议时长、推进方式、中文救援规则、纠错规则和结束复盘格式。
+### Assessment
 
-发音标准参照仍优先使用真人母语或高质量权威音源；浏览器 TTS 只作为快速辅助。
+日常自评和正式验收严格分开。
 
-### 6. StudyEvent v1 学习事实层
+- 手机：100 分综合验收 + Product Lab 场景判断；
+- 商圈与零售：100 分综合验收 + 空间 / 零售案例；
+- 行业与商业：100 分综合验收 + 市场证据 / 商业判断；
+- 韩语：每日 Exit Check + Day 0 / Week 1 / Week 2 / Week 3 / Month 1 阶段验收。
 
-`learner-data-v1.js` 已作为兼容层在 `app.js` 读取本地数据之前运行，把当前原型数据逐步提升为正式学习事实：
+正式 Assessment 的错误会进入统一学习事实层，而不是只显示一次分数后消失。
+
+### StudyEvent v1
+
+`learner-data-v1.js` 将不同学习行为逐步归一为 `StudyEvent v1`：
 
 ```text
-legacy history
-→ StudyEvent v1
+review / practice
+→ StudyEvent
 
-legacy testResults
+formal assessment
 → Assessment Attempt
 → item StudyEvent
 
-again / 正式测试答错
+真实错误
 → ErrorRecord
 
 StudyEvent
 → concept_id × skill Learner Signal
-→ introduced_content 初始事实
 ```
 
-当前仍保留旧 `history / testResults` 供 V0.5 页面兼容使用，但导出的备份已经带 `studyEvents / assessmentAttempts / errorRecords / learnerSignals / introducedContent`。
+当前仍保留部分旧 `history / testResults` 供页面兼容，但 StudyEvent 已是平台未来的事实源。
 
-### 7. 正式测试
+### Adaptive Learning / Error Bank
 
-日常 `认识 / 模糊 / 不认识` 与正式测试严格分开。当前手机、商圈零售、行业商业已有 100 分验收；韩语 Day 0 / Week 1 / Month 1 Assessment 仍待按独立 Assessment Schema 完成。
+Adaptive Learning 不只是“错题本”。标准闭环是：
 
-### 8. 数据备份
+```text
+真实错误
+→ ErrorRecord active
+→ 找回对应 Concept / Content / Skill
+→ 最小必要补救
+→ 单点重新验证
+→ 通过后 resolved
+```
 
-支持 JSON 学习数据导出 / 导入，用于自动跨设备同步完成前的备份与迁移。
+手机、韩语、商圈零售、行业商业都必须满足这条共享闭环。领域专项模块可以提供更适合自己的重测方式，但不能建立互不兼容的数据孤岛。
 
-## 学习底层原则
+### Persistence / PWA
 
-1. Curriculum 决定“第一次什么时候学”；
-2. FSRS 决定“已经学过的内容什么时候回来”；
-3. Learner Model 最终决定“应该用什么方式再练”；
-4. 韩语课程必须直接提供可学正文，不把“自己找资料”变成用户任务；
-5. 每周纸质材料优先复用官方免费 PDF，只标清本周打印范围，不重复造教材；
-6. 日常自评不等于客观考试正确率；
-7. StudyEvent 是学习事实源，熟练度和能力分由历史计算；
-8. Concept 与 Card 分离；
-9. ChatGPT 是老师和陪练，但不会伪装成绝对准确的发音评分仪。
-
-## 已有能力
-
-- 响应式 PWA；
 - Manifest + Service Worker；
-- 多领域入口；
-- 今日学习；
-- 完整 Lesson Reader；
-- 韩语 Day 0–28 内置课程正文；
-- 韩语每周官方 PDF 打印资料入口；
-- 韩语每日 ChatGPT Voice Prompt；
-- 学习路线与完成状态；
-- 韩语 Lesson Unlock；
-- 主动输出后查看答案；
-- `认识 / 模糊 / 不认识` 三档自评；
-- `ts-fsrs` 优先、离线简化排程兜底；
-- 到期复习、学习历史与当日统计；
-- 薄弱类别识别与专项训练；
-- 独立正式测试；
-- StudyEvent v1 兼容迁移；
-- Assessment Attempt / ErrorRecord / Learner Signal 基础层；
+- 手机 / 桌面响应式界面；
 - JSON 学习数据导出 / 导入；
-- 商圈空间 SVG 训练；
-- 行业公开事实证据题；
-- GitHub Pages 自动部署；
-- Static QA 自动检查 JavaScript、JSON 与 Service Worker Shell 引用。
+- 本地 `localStorage` 学习记录；
+- `state-write-guard-v113.js` 防止旧 App 内存快照覆盖较新的 StudyEvent / ErrorRecord；
+- PWA 离线缓存关键运行模块。
+
+当前尚未开启自动跨设备同步。清除浏览器站点数据前应先导出备份。
+
+## 四个领域的专项扩展
+
+共享平台之上，每个领域保留自己的专业训练形态。
+
+### 📱 手机产品专家
+
+- 手机技术知识库 / Concept Tree；
+- 当前真实产品与官方规格；
+- Product Lab；
+- 产品组合、参数 → 体验、场景匹配；
+- 后续继续增强看图识机、竞品和 Retail GTM 场景题。
+
+### 🇰🇷 韩语
+
+- Day 0–28 完整课程正文；
+- Lesson Unlock；
+- 主动表达、听力 / 听写、TTS；
+- 每日 Exit Check；
+- Day 0 / 7 / 14 / 21 / 28 阶段验收；
+- 每日 ChatGPT Voice Task；
+- 世宗学堂官方纸质学习资源入口。
+
+连续语音陪练由 ChatGPT Voice 承担；Learning Paw 负责课程、任务调度、学习记录与弱项闭环。
+
+### 🗺️ 商圈与零售
+
+- 用户 / Need State / JTBD；
+- 商圈空间和竞争锚点；
+- 门店陈列与 Demo；
+- O2O 服务承接；
+- 活动、库存、用户经营与经营诊断；
+- 后续强化真实门店案例和空间交互训练。
+
+### 🌍 行业与商业
+
+- 市场结构与份额；
+- Sell-in / Sell-out；
+- 产品组合与价格权益；
+- 渠道和商业模式；
+- 证据边界、替代解释、情景分析；
+- 后续强化实时市场数据和竞争情报训练。
+
+## QA：按平台而不是按单领域守门
+
+GitHub Actions 的 Static QA 分层检查：
+
+1. JavaScript / JSON 语法；
+2. Service Worker APP_SHELL；
+3. Learner Data migration；
+4. Curriculum Content Integrity；
+5. `platform-contract.mjs`：四个领域共同满足平台内容契约；
+6. Browser Runtime Smoke；
+7. Product Lab / Adaptive Loop；
+8. `adaptive-general-smoke.mjs`；
+9. `platform-adaptive-smoke.mjs`：四领域 Assessment error → ErrorRecord → targeted revalidation → resolved。
+
+这意味着以后即使只修改一个领域，也不能无意破坏另外三个领域的共享学习能力。
 
 ## 数据与隐私 / 版权
 
-公开仓库只放程序、明确可公开的自有课程内容和公开安全资料链接。世宗学堂教材仍保留在官方站点，Learning Paw 只链接其官方详情/下载页，不重新分发 PDF。
+公开仓库只放程序、可公开的自有课程内容、公开安全资料与官方资源链接。世宗学堂教材保留在官方站点，Learning Paw 只提供官方详情 / 下载入口，不重新分发 PDF。
 
-当前私人学习数据仍保存在浏览器 `localStorage`：iPhone 与 Mac 暂不自动同步；清除网站数据前应先导出备份。
+个人学习记录当前保存在本机浏览器，不写入公开 GitHub 仓库。
 
-## 部署与 QA
+## 下一阶段
+
+当前平台的重点不是继续堆独立模块，而是继续收敛共享核心：
+
+1. **统一 Today Plan**：把当前 Curriculum 新内容、FSRS Due、Learner Model 高价值弱项、必要 Assessment / Revalidation 放进一个受总负荷约束的计划器；
+2. **页面原生消费 StudyEvent**：逐步减少旧 `history / testResults` 对运行逻辑的主导；
+3. **统一 Concept × Skill 推荐**：让四个领域都能根据真实历史决定下一步练什么；
+4. **深化领域专项能力**：手机、韩语、零售、行业在共享底座稳定后继续各自专业化；
+5. **跨设备同步**：在数据模型稳定后再进入 IndexedDB / 云端同步。
+
+## 部署
 
 GitHub Pages：
 
 https://xie633-arch.github.io/learning-paw/
 
-`main` 分支更新后通过 GitHub Actions 自动重新发布。Service Worker 当前缓存包含韩语完整课程与韩语 Lesson Reader 模块。
+`main` 分支更新后由 GitHub Actions 自动发布。
 
-## 当前仍未完成的关键项
-
-1. Day 0 真正 Baseline Assessment；
-2. 韩语 Week 1 / Month 1 正式 Assessment；
-3. 页面原生消费 StudyEvent / Assessment Attempt；
-4. Error Bank 的解决 / 回炉 / 验证闭环；
-5. `concept_id × skill` 真正弱项推荐；
-6. 正式 `introduced_content` Learner State；
-7. Today Plan 合并“当前 Lesson 新卡 + FSRS Due + Learner Model 弱项”；
-8. 根据 Day 1–7 实际学习结果继续完善 Day 8–28 正式训练 Card；
-9. IndexedDB / 云端跨设备同步；
-10. iOS / Android 更完整的 PWA 安装体验 QA。
-
-当前版本定位：**V0.5 已经能够直接承载“课程正文 + 训练 + 复习 + ChatGPT Voice + 每周纸质材料”的韩语学习闭环；下一阶段重点转向真实试学后的内容调优与 Assessment / Error Bank。**
+当前定位：**Learning Paw 已从单模块学习原型进入“多领域共享学习引擎”阶段。后续新增功能默认先判断它属于平台共性能力还是领域专项能力，再决定放在哪一层。**
