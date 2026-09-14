@@ -33,13 +33,21 @@ if (legacyPuraSource) {
 // objective × district × position × partner -> one-store-one-plan -> war-room review.
 await import('./retail-business-district-v141.js');
 
+// V0.7 replaces in-app Hangul teaching with one prerequisite assessment gate.
+// Learners can use Bilibili or any preferred course for Hangul input; Learning Paw
+// verifies readiness before unlocking the rest of the Korean route.
+await import('./korean-hangul-gate-v07.js');
+await import('./korean-hangul-gate-compat-v071.js');
+// V0.15 adds the Korean memory layer: vocabulary items remain inside the same
+// FSRS / StudyEvent engine but gain language-specific directions and audio metadata.
+await import('./korean-vocab-v15.js');
+
 await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
 await import('./korean-practice-month1-v06.js');
 
-// Day 0 baseline now runs through the staged Assessment layer rather than legacy review cards.
-
-// V0.5 Korean lessons: full built-in reading content + official weekly printable resources.
+// Korean lessons retain concise built-in references, while external courses can
+// provide the primary explanation/input layer.
 await import('./korean-lesson-content-v05.js');
 
 await import('./v04-boot.js');
@@ -66,7 +74,8 @@ await import('./formal-test-adapter-v111.js');
 await import('./app.js');
 await import('./korean-voice-ui-v04.js');
 
-// Korean staged assessment: Day 0 baseline + Day 7 / 14 / 21 / 28 checks.
+// Korean staged assessment now begins with the Hangul prerequisite gate, then
+// continues to the later stage checks.
 await import('./korean-assessment-ui-v05.js');
 
 // V0.5 mobile information architecture + built-in lesson reading content.
@@ -106,15 +115,15 @@ const syncKoreanRuntimeCopy = () => {
 
   const lead = document.querySelector('#homeLead');
   if (lead) {
-    lead.textContent = 'Day 0–28 已提供完整学习正文：Curriculum 解锁新课、当日训练卡与 FSRS 负责练习和复习，普通学习日通过 Exit Check 后完成；同时附每日 ChatGPT Voice Prompt、每周官方打印材料与阶段验收。';
+    lead.textContent = '优质网课负责新知识输入；Learning Paw 负责韩文字母通关、FSRS 词汇记忆、听音与主动回忆、阶段验收；ChatGPT Voice 负责连续口语输出。';
   }
 
   const notice = document.querySelector('#koreanNotice');
   if (notice) {
     const heading = notice.querySelector('h2');
     const body = notice.querySelector('p.muted');
-    if (heading) heading.textContent = '韩语：正文 + 训练 + Exit Check + Voice + 阶段验收';
-    if (body) body.textContent = '不需要自己找资料。Learning Paw 提供 Day 0–28 正文、课程解锁训练卡、FSRS、普通学习日 Exit Check、每日 ChatGPT Voice Prompt、每周官方打印材料，以及 Day 0 / 7 / 14 / 21 / 28 阶段验收。';
+    if (heading) heading.textContent = '韩语：网课输入 × 词汇记忆 × Voice 输出';
+    if (body) body.textContent = '韩文字母和新语法可以跟随你喜欢的网课学习；Learning Paw 不重复造一套网课，而是负责前置考核、单词与例句音频、FSRS 复习、主动回忆、听写、薄弱重练和阶段验收。连续口语训练交给 ChatGPT Voice。';
   }
 };
 
@@ -157,3 +166,8 @@ await import('./learner-recommendation-v13.js');
 // First consumer: Today Plan displays one explainable recommendation focus without
 // changing Curriculum, FSRS, revalidation or Assessment quotas.
 await import('./recommendation-ui-v13.js');
+
+// V0.15 language-specific presentation layer. It does not create a second scheduler:
+// the existing review flow still owns FSRS/history/StudyEvent, while this layer turns
+// Korean vocabulary cards into an audio-first one-word-at-a-time trainer.
+await import('./korean-vocab-ui-v15.js');
