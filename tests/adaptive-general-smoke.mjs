@@ -20,7 +20,7 @@ try {
   page.setDefaultTimeout(10000);
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'application/javascript', body: 'throw new Error("CI simulated FSRS offline");' }));
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.__ADAPTIVE_METADATA_V11__?.version === '0.11.0');
+  await page.waitForFunction(() => window.__ADAPTIVE_METADATA_V11__?.version === '0.11.2');
   await page.waitForFunction(() => window.__ADAPTIVE_LEARNING_V11__?.version === '0.11.0');
 
   // 1) Ordinary recall: an "again" rating becomes a recall-gap ErrorRecord.
@@ -65,7 +65,7 @@ try {
   }, STORAGE_KEY);
   await page.getByRole('button', { name: '返回薄弱页' }).click();
 
-  // 2) Formal test: stable metadata turns a wrong answer into a concept/skill error.
+  // 2) Formal test: current assessment metadata turns a wrong answer into a concept/skill error.
   await page.evaluate(key => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
     state.testResults = [
@@ -73,49 +73,33 @@ try {
       {
         id: 'adaptive-formal-1',
         domainId: 'phone',
-        title: '手机产品专家｜100 分基础验收',
+        title: '手机产品专家｜100 分综合验收',
         score: 0,
         completedAt: '2026-09-14T12:05:00+08:00',
         answers: [{
-          question: 'SoC 最准确的描述是？',
+          question: '用户说“芯片强就一定长期流畅”，最完整的回应是？',
           selectedIndex: 0,
           correctIndex: 1,
           correct: false,
-          explanation: 'SoC 通常集成 CPU、GPU、NPU、ISP、Modem 等多类模块。',
+          explanation: '整机体验是多个子系统共同作用的结果。',
         }],
       },
     ];
     localStorage.setItem(key, JSON.stringify(state));
   }, STORAGE_KEY);
 
-  await page.waitForTimeout(250);
-  const formalDiagnostic = await page.evaluate(async key => {
-    const state = JSON.parse(localStorage.getItem(key) || '{}');
-    const platform = await import('./platform-data.js');
-    return {
-      metadataRuntime: window.__ADAPTIVE_METADATA_V11__,
-      adapterRuntime: window.__FORMAL_TEST_ADAPTER_V111__,
-      firstQuestion: platform.tests.phone?.questions?.[0],
-      testResults: state.testResults,
-      attempts: state.assessmentAttempts,
-      formalEvents: (state.studyEvents || []).filter(event => String(event.session_id || '').includes('adaptive-formal-1')),
-      formalErrors: (state.errorRecords || []).filter(record => String(record.content_id || '').includes('phone-foundation') || String(record.concept_id || '').includes('phone-soc')),
-    };
-  }, STORAGE_KEY);
-  console.log('FORMAL_ADAPTIVE_DIAGNOSTIC', JSON.stringify(formalDiagnostic));
-
   await page.waitForFunction(key => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
-    return (state.errorRecords || []).some(record => record.concept_id === 'phone-soc-system' && record.skill === 'technical_architecture' && record.status === 'active');
+    return (state.errorRecords || []).some(record => record.concept_id === 'phone-system-sustained-experience' && record.skill === 'system-linking' && record.status === 'active');
   }, STORAGE_KEY);
-  const formalRow = page.locator('.al-error').filter({ hasText: 'SoC 最准确的描述是？' });
+  const formalRow = page.locator('.al-error').filter({ hasText: '用户说“芯片强就一定长期流畅”，最完整的回应是？' });
   assert(await formalRow.count() === 1, 'formal-test concept error did not appear in generic Error Bank');
   await formalRow.locator('[data-adaptive-revalidate]').click();
   const formalOptions = page.locator('#adaptiveLearningOverlay .al-option');
   await formalOptions.nth(1).click();
   await page.waitForFunction(key => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
-    return (state.errorRecords || []).some(record => record.concept_id === 'phone-soc-system' && record.status === 'resolved');
+    return (state.errorRecords || []).some(record => record.concept_id === 'phone-system-sustained-experience' && record.status === 'resolved');
   }, STORAGE_KEY);
   await page.locator('#adaptiveLearningOverlay .al-row button').filter({ hasText: '关闭' }).click();
 
