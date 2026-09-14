@@ -26,6 +26,7 @@ try {
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__STUDY_EVENT_UI_V122__?.version === '0.12.2');
+  await page.waitForFunction(() => typeof window.__LEARNER_RECOMMENDATION_V13__?.rankActiveErrorRecommendations === 'function');
 
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
   await page.locator('[data-domain="retail"]').click();
@@ -91,6 +92,9 @@ try {
       && current.route?.completed === 1
       && current.route?.total === total
       && current.weakCount === 1
+      && current.weakOrder?.[0]?.conceptId === 'retail.need-state'
+      && current.weakOrder?.[0]?.priorityScore > 0
+      && current.weakOrder?.[0]?.action === 'targeted_review_then_revalidate'
       && current.latestAssessment?.score === 80;
   }, routeTotal);
 
@@ -100,7 +104,10 @@ try {
   await page.locator('#mobileBottomNav button[data-target="weakCard"]').click();
   const weakText = (await page.locator('#weakList').textContent()) || '';
   assert(weakText.includes('retail.need-state'), `weak UI did not use ErrorRecord/LearnerSignal: ${weakText}`);
-  assert(weakText.includes('StudyEvent'), `weak UI does not identify fact-derived state: ${weakText}`);
+  assert(weakText.includes('建议：针对性复习后重验证'), `weak UI did not expose recommendation action: ${weakText}`);
+  assert(weakText.includes('推荐 '), `weak UI did not expose recommendation priority: ${weakText}`);
+  const recommendationScore = Number(await page.locator('#weakList .weak-item').first().getAttribute('data-recommendation-score'));
+  assert(Number.isFinite(recommendationScore) && recommendationScore > 0, `weak UI recommendation score missing: ${recommendationScore}`);
 
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
   const assessmentText = (await page.locator('#lastTestResult').textContent()) || '';
@@ -130,7 +137,7 @@ try {
   assert(resetRouteText?.includes(`0 / ${routeTotal}`), `route reset fact did not update UI: ${resetRouteText}`);
 
   await context.close();
-  console.log('StudyEvent UI smoke OK: route, weak summary and latest assessment render from learner facts without legacy history/testResults.');
+  console.log('StudyEvent UI smoke OK: route, recommendation-backed Weak Spots and latest assessment render from learner facts without legacy history/testResults.');
 } finally {
   await browser.close();
 }
