@@ -1,44 +1,47 @@
 import { tests } from './platform-data.js';
 import { koreanExitChecks } from './korean-exit-check-v06.js';
 
-const VERSION = '0.11.0';
+const VERSION = '0.11.2';
 
+// These mappings follow the CURRENT V0.4 advanced assessment bank installed by
+// v04-boot.js. Keep the question's authored skill when present; this layer adds
+// a stable Concept identity so errors can be remediated and revalidated.
 const formalMetadata = {
   phone: [
-    ['technical_architecture', 'phone-soc-system', 'SoC 系统组成'],
-    ['display_system', 'phone-ltpo', 'LTPO 与自适应刷新'],
-    ['performance_reasoning', 'phone-sustained-performance', '持续性能与系统协同'],
-    ['camera_system', 'phone-ois', 'OIS 光学防抖'],
-    ['battery_system', 'phone-energy-efficiency', '电池容量与整机能效'],
-    ['gtm_framework', 'phone-gtm-who', 'GTM：Who'],
-    ['value_translation', 'phone-parameter-to-value', '参数 → 场景价值'],
-    ['gtm_framework', 'phone-gtm-measure', 'GTM：Measure'],
-    ['competition', 'phone-competitive-system', '系统化竞品分析'],
-    ['diagnosis', 'phone-sales-diagnosis', '销量问题诊断'],
+    ['system-linking', 'phone-system-sustained-experience', '整机持续流畅'],
+    ['display', 'phone-ltpo-adaptive', 'LTPO 与自适应刷新'],
+    ['scenario', 'phone-business-travel-reliability', '商务出行：通信 / 续航 / 补电'],
+    ['camera', 'phone-telephoto-scenario-value', '长焦的场景价值'],
+    ['competitive-intelligence', 'phone-real-transaction-competition', '真实交易条件与竞品判断'],
+    ['retail-demo', 'phone-demo-task-design', '任务导向的零售 Demo'],
+    ['gtm', 'phone-gtm-measure', 'GTM：Measure'],
+    ['diagnosis', 'phone-sales-diagnosis', '销量问题系统诊断'],
+    ['ecosystem', 'phone-ecosystem-retention', '生态协同与迁移成本'],
+    ['product-strategy', 'phone-portfolio-roles', '产品组合与业务角色'],
   ],
   retail: [
-    ['user_insight', 'retail-need-state', 'Need State'],
-    ['user_insight', 'retail-jtbd', 'JTBD'],
-    ['store_experience', 'retail-merchandising', '陈列与价值理解'],
-    ['store_experience', 'retail-demo', '场景化 Demo'],
-    ['operations', 'retail-funnel', '零售漏斗诊断'],
-    ['o2o_fulfillment', 'retail-o2o-service', 'O2O 服务承接'],
-    ['operations', 'retail-campaign-goal', '活动经营目标'],
-    ['user_operations', 'retail-ltv', '成交后的用户经营'],
-    ['trade_area', 'retail-trade-area', '商圈与客流结构'],
-    ['diagnosis', 'retail-hypothesis', '事实 / 判断 / 假设'],
+    ['need-state', 'retail-need-state', 'Need State'],
+    ['spatial-analysis', 'retail-competitive-anchor', '竞品锚点与真实动线'],
+    ['traffic-quality', 'retail-traffic-conversion', '客流质量与转化诊断'],
+    ['display', 'retail-merchandising-value', '陈列与价值理解'],
+    ['demo', 'retail-demo-cognitive-load', 'Demo 与认知负担'],
+    ['o2o', 'retail-o2o-service', 'O2O 服务承接'],
+    ['campaign', 'retail-campaign-goal', '活动经营目标'],
+    ['inventory', 'retail-sellable-inventory', '可售库存与结构'],
+    ['user-ops', 'retail-ltv', '成交后的用户经营'],
+    ['review', 'retail-fact-hypothesis', '事实 / 判断 / 待验证假设'],
   ],
   industry: [
-    ['market_structure', 'industry-share-quality', '份额与业务质量'],
-    ['market_structure', 'industry-sell-in-out', 'Sell-in / Sell-out'],
-    ['pricing', 'industry-asp', 'ASP'],
+    ['market-evidence', 'industry-share-quality', '份额与业务质量'],
+    ['source-evaluation', 'industry-source-methodology', '来源口径与方法差异'],
+    ['sell-in-out', 'industry-sell-in-out', 'Sell-in / Sell-out 与渠道库存'],
+    ['value-vs-volume', 'industry-value-volume', '量与价值分离'],
+    ['concentration', 'industry-market-concentration', '市场集中度'],
+    ['pricing', 'industry-real-price', '真实交易价格'],
     ['portfolio', 'industry-cannibalization', '产品自我蚕食'],
-    ['brand', 'industry-positioning', '品牌定位'],
-    ['channel', 'industry-direct-channel', '直营渠道角色'],
-    ['business_model', 'industry-ltv', 'LTV'],
-    ['ecosystem', 'industry-ecosystem', '生态协同'],
-    ['competitive_intelligence', 'industry-fact-vs-inference', '竞情事实与解释'],
-    ['strategy', 'industry-scenario-analysis', '情景分析'],
+    ['channel', 'industry-channel-tradeoff', '渠道控制与覆盖取舍'],
+    ['evidence', 'industry-evidence-boundary', '证据边界与替代解释'],
+    ['scenario', 'industry-scenario-analysis', '情景分析'],
   ],
 };
 
@@ -50,9 +53,11 @@ Object.entries(formalMetadata).forEach(([domain, rows]) => {
   (assessment.questions || []).forEach((question, index) => {
     const [skill, conceptId, conceptLabel] = rows[index] || ['general', `${domain}-item-${index + 1}`, question.q || `题目 ${index + 1}`];
     question.item_id ||= `${domain}-foundation-${String(index + 1).padStart(2, '0')}`;
-    question.section_id ||= skill;
+    question.section_id ||= question.skill || skill;
     question.skill ||= skill;
-    question.concept_ids ||= [conceptId];
+    if (!Array.isArray(question.concept_ids) || question.concept_ids.length === 0) {
+      question.concept_ids = [conceptId];
+    }
     question.concept_label ||= conceptLabel;
     question.max_score ||= 10;
   });
