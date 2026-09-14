@@ -1,0 +1,244 @@
+# Learning Paw｜整体平台架构
+
+Learning Paw 不是“韩语网站 + 手机题库 + 其他几个入口”的拼接，而是一套多领域共享学习引擎。
+
+当前正式领域：
+
+- 📱 手机产品专家
+- 🇰🇷 韩语
+- 🗺️ 商圈与零售
+- 🌍 行业与商业
+
+四个领域允许拥有不同内容形态和专项工具，但必须共享同一套学习事实、学习闭环和质量门槛。
+
+## 1. 平台核心闭环
+
+所有领域都遵循同一个主链路：
+
+```text
+Curriculum / Lesson
+        ↓
+Practice / Active Recall
+        ↓
+FSRS / Objective Assessment
+        ↓
+StudyEvent
+        ↓
+Learner Model
+        ↓
+ErrorRecord / Weak Signal
+        ↓
+Targeted Remediation
+        ↓
+Revalidation
+        ↓
+resolved / next learning action
+```
+
+领域专项能力只能接在这条主链路上，不能另造一套互不兼容的数据体系。
+
+## 2. 九层结构
+
+### L1｜Domain Registry
+
+定义领域身份、状态、入口和用户可见定位。
+
+当前来源：`cards.js` + `platform-data.js` 的 domain overrides。
+
+要求：四个正式领域都处于 active 状态，并能从统一首页进入。
+
+### L2｜Curriculum & Lesson Content
+
+Curriculum 决定“第一次什么时候学”。Lesson Content 提供真正可学的正文、任务和输出，而不是只给标题或让用户自己找资料。
+
+要求：每个领域都必须有完整路线、学习任务和输出物。
+
+### L3｜Practice Bank
+
+主动回忆、听写、案例判断、参数→体验等都属于 Practice。
+
+要求：Practice 是内容的练习表达，不等于 Curriculum，也不等于正式 Assessment。
+
+### L4｜Scheduling
+
+已经引入的可间隔复习内容由 FSRS 决定什么时候回来；未进入 Curriculum 的内容不应因为“题库存在”就自动挤进今日任务。
+
+要求：新内容引入和复习排程分离。
+
+### L5｜Assessment
+
+日常自评和正式验收严格分开。
+
+- 手机：100 分正式验收 + Product Lab 场景判断
+- 韩语：Exit Check + Day 0 / Week 1 / Week 2 / Week 3 / Month 1 阶段验收
+- 商圈与零售：100 分正式验收 + 空间/案例训练
+- 行业与商业：100 分正式验收 + 事实证据/商业判断训练
+
+不同领域可以使用不同题型，但结果必须最终映射到统一学习事实层。
+
+### L6｜StudyEvent｜学习事实层
+
+`StudyEvent v1` 是统一事实源。
+
+页面历史、正式测试、专项实验、阶段验收都应逐步归一为 StudyEvent，而不是长期依赖各自的私有结果结构。
+
+核心原则：
+
+- 事实只记录发生过什么；
+- 熟练度、弱项、建议由事实计算；
+- 不把 UI 临时状态当长期学习事实。
+
+### L7｜Learner Model
+
+Learner Model 从 StudyEvent 派生：
+
+- `assessmentAttempts`
+- `errorRecords`
+- `learnerSignals`
+- `introducedContent`
+
+目标不是简单统计“做过多少题”，而是逐步回答：
+
+1. 哪个 Concept 不稳定？
+2. 哪种 Skill 出问题？
+3. 是记忆缺口、理解缺口、应用缺口还是表达缺口？
+4. 下一步应该复习、补课、重新做案例，还是重新验收？
+
+### L8｜Adaptive Learning
+
+Adaptive Learning 不等于“错题本”。
+
+标准闭环：
+
+```text
+真实错误
+→ ErrorRecord
+→ 找回对应 Concept / Content / Skill
+→ 给最小必要补救
+→ 单点重新验证
+→ 通过后 resolved
+```
+
+补救任务不能无条件挤占每日 FSRS 上限。
+
+### L9｜Persistence / Sync / PWA
+
+当前学习数据以 localStorage 为主，支持 JSON 导出/导入。
+
+`state-write-guard-v113.js` 用于防止旧的 App 内存快照覆盖较新的 StudyEvent / ErrorRecord 等学习事实。
+
+下一阶段才进入 IndexedDB / 云同步；同步层不能改变 StudyEvent 作为事实源的原则。
+
+## 3. 四领域能力矩阵
+
+| 能力 | 手机产品专家 | 韩语 | 商圈与零售 | 行业与商业 |
+| --- | --- | --- | --- | --- |
+| Curriculum | ✅ | ✅ | ✅ | ✅ |
+| 完整 Lesson Content | ✅ | ✅ | ✅ | ✅ |
+| Practice / 主动回忆 | ✅ | ✅ | ✅ | ✅ |
+| FSRS | ✅ | ✅ | ✅ | ✅ |
+| 正式 Assessment | ✅ 100分 | ✅ 阶段验收 | ✅ 100分 | ✅ 100分 |
+| StudyEvent | ✅ | ✅ | ✅ | ✅ |
+| ErrorRecord | ✅ | ✅ | ✅ | ✅ |
+| Targeted Revalidation | ✅ | ✅ | ✅ | ✅ |
+| 专项扩展 | Product Lab / 产品知识库 | Voice / Exit Check / 阶段验收 | 空间 / 门店 / O2O 案例 | 事实证据 / 市场商业判断 |
+
+这张表是平台边界：以后新增领域时，也应先满足左侧核心能力，再增加专项工具。
+
+## 4. QA 分层
+
+QA 也按平台层次组织，而不是按某个领域临时补测试。
+
+### A. Syntax / Shell
+
+- JavaScript syntax
+- JSON syntax
+- Service Worker APP_SHELL 引用
+
+### B. Content Contract
+
+- `content-integrity.mjs`
+- `platform-contract.mjs`
+
+`platform-contract` 强制四领域都具备 active domain、Curriculum、Practice Bank 和正式 Assessment 路径。
+
+### C. Shared Runtime
+
+- `browser-runtime-smoke.mjs`
+- `learner-data-smoke.mjs`
+
+### D. Adaptive Core
+
+- `adaptive-general-smoke.mjs`
+- `platform-adaptive-smoke.mjs`
+
+`platform-adaptive-smoke` 必须验证手机、零售、行业、韩语都能完成：
+
+```text
+assessment error
+→ ErrorRecord active
+→ 对应领域薄弱页可见
+→ targeted revalidation
+→ ErrorRecord resolved
+```
+
+### E. Domain Extensions
+
+专项扩展拥有自己的 Smoke Test，但不得代替平台核心测试：
+
+- 手机 Product Lab：`product-lab-smoke.mjs` / `adaptive-loop-smoke.mjs`
+- 韩语阶段验收：由平台 adaptive smoke + 后续专项测试覆盖
+- 零售空间案例：后续独立 interaction smoke
+- 行业证据题：后续独立 evidence smoke
+
+## 5. 后续开发优先级
+
+### P0｜保持平台契约全绿
+
+任何领域升级都不能破坏另外三个领域。
+
+### P1｜Today Plan 统一
+
+Today Plan 最终不是“到期卡数量”，而是：
+
+```text
+当前 Curriculum 新内容
++ FSRS Due
++ Learner Model 高价值弱项
++ 必要 Assessment / Revalidation
+```
+
+系统需要控制总负荷，避免所有模块各自往 Today 塞任务。
+
+### P2｜页面原生消费 StudyEvent
+
+逐步减少旧 `history / testResults` 对页面逻辑的主导，让 StudyEvent / Assessment Attempt 成为真正运行时数据源。
+
+### P3｜跨领域 Learner Signal 推荐
+
+四个领域都使用 `concept_id × skill` 信号形成下一步动作，而不是手机一套、韩语一套、零售/行业只做静态题库。
+
+### P4｜领域专项深化
+
+在共享闭环稳定后，再分别增强：
+
+- 手机：真实产品、竞品、GTM 场景与看图识机；
+- 韩语：听说读写、ChatGPT Voice、TOPIK 路线；
+- 零售：门店、商圈、O2O、活动、经营案例；
+- 行业：市场数据、价格权益、渠道、竞争情报与战略判断。
+
+### P5｜跨设备同步
+
+在数据模型稳定后再做 IndexedDB / 云端同步，避免先同步一套仍在变化的数据结构。
+
+## 6. 开发判断原则
+
+以后增加功能时先问五个问题：
+
+1. 这是平台共性能力，还是领域专项能力？
+2. 它产生的学习行为能否落成 StudyEvent？
+3. 错误能否进入统一 Learner Model？
+4. 下一步动作能否被 Today Plan 统一调度？
+5. 它会不会让一个领域的特殊逻辑污染另外三个领域？
+
+只有回答清楚这五个问题，才继续实现。
