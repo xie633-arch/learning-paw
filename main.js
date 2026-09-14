@@ -137,3 +137,7 @@ await import('./adaptive-learning-v11.js');
 // V0.11.2 makes Korean Week 1 / 2 / 3 / Month 1 assessment errors actionable in
 // the same weak-knowledge view with single-item revalidation and resolved state.
 await import('./korean-stage-adaptive-v112.js');
+
+// V0.12 unifies the four domains into one Today Plan without mixing remediation
+// tasks into the FSRS card quota: lesson + bounded review + revalidation + assessment.
+await import('./today-plan-v12.js');
