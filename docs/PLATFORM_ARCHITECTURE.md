@@ -43,9 +43,9 @@ resolved / next learning action
 
 定义领域身份、状态、入口和用户可见定位。
 
-当前来源：`cards.js` + `platform-data.js` 的 domain overrides。
+当前来源：`cards.js` + `platform-data.js` 的 domain overrides；韩语 Curriculum 当前仍通过 `korean-v04.js` 在启动阶段注册到共享 Registry。
 
-要求：四个正式领域都处于 active 状态，并能从统一首页进入。
+要求：四个正式领域都处于 active 状态，并能从统一首页进入。Registry 的源码来源后续可以继续收敛，但运行时必须表现为一个平台。
 
 ### L2｜Curriculum & Lesson Content
 
@@ -88,6 +88,16 @@ Curriculum 决定“第一次什么时候学”。Lesson Content 提供真正可
 - 熟练度、弱项、建议由事实计算；
 - 不把 UI 临时状态当长期学习事实。
 
+V0.12 已新增 `study-event-read-model-v12.js`。它开始承担“页面如何读取事实”的统一入口，目前已覆盖：
+
+- 今日 Practice 次数；
+- 今日 `good` 次数；
+- 当日首次引入内容；
+- 已完成 Lesson；
+- 已完成 Assessment。
+
+`history / testResults / lessonProgress` 暂时继续存在作为兼容桥，而不是长期事实源。
+
 ### L7｜Learner Model
 
 Learner Model 从 StudyEvent 派生：
@@ -121,6 +131,8 @@ Adaptive Learning 不等于“错题本”。
 
 补救任务不能无条件挤占每日 FSRS 上限。
 
+四领域共同闭环已由 `platform-adaptive-smoke.mjs` 自动验证。
+
 ### L9｜Persistence / Sync / PWA
 
 当前学习数据以 localStorage 为主，支持 JSON 导出/导入。
@@ -129,7 +141,38 @@ Adaptive Learning 不等于“错题本”。
 
 下一阶段才进入 IndexedDB / 云同步；同步层不能改变 StudyEvent 作为事实源的原则。
 
-## 3. 四领域能力矩阵
+## 3. 统一 Today Plan｜V0.12 已落地
+
+Today Plan 不再只是“到期卡数量”，而是把四类学习动作放进同一计划对象：
+
+```text
+当前 Curriculum Lesson
++ FSRS Due / 少量新卡
++ Learner Model 高价值弱项重验证
++ 必要 Assessment
+```
+
+但“统一”不代表把所有动作强行混成一个数字。
+
+当前负荷规则：
+
+- FSRS / Practice：每日建议最多 10 张；
+- 其中新卡：每日最多 5 张；
+- ErrorRecord 重验证：每日最多优先列 3 项；
+- 重验证不偷偷占用 FSRS 卡片配额；
+- Assessment 作为独立行动组，只在课程节点或首次正式验收条件满足时提示。
+
+`today-plan-v12.js` 为四领域输出同一结构：
+
+- `lesson`
+- `review`
+- `revalidation`
+- `assessment`
+- `workload`
+
+页面“今日学习”已经原生显示这四组任务。
+
+## 4. 四领域能力矩阵
 
 | 能力 | 手机产品专家 | 韩语 | 商圈与零售 | 行业与商业 |
 | --- | --- | --- | --- | --- |
@@ -141,13 +184,14 @@ Adaptive Learning 不等于“错题本”。
 | StudyEvent | ✅ | ✅ | ✅ | ✅ |
 | ErrorRecord | ✅ | ✅ | ✅ | ✅ |
 | Targeted Revalidation | ✅ | ✅ | ✅ | ✅ |
+| Unified Today Plan | ✅ | ✅ | ✅ | ✅ |
 | 专项扩展 | Product Lab / 产品知识库 | Voice / Exit Check / 阶段验收 | 空间 / 门店 / O2O 案例 | 事实证据 / 市场商业判断 |
 
 这张表是平台边界：以后新增领域时，也应先满足左侧核心能力，再增加专项工具。
 
-## 4. QA 分层
+## 5. QA 分层
 
-QA 也按平台层次组织，而不是按某个领域临时补测试。
+QA 按平台层次组织，而不是按某个领域临时补测试。
 
 ### A. Syntax / Shell
 
@@ -172,7 +216,7 @@ QA 也按平台层次组织，而不是按某个领域临时补测试。
 - `adaptive-general-smoke.mjs`
 - `platform-adaptive-smoke.mjs`
 
-`platform-adaptive-smoke` 必须验证手机、零售、行业、韩语都能完成：
+`platform-adaptive-smoke` 验证四个领域都能完成：
 
 ```text
 assessment error
@@ -182,37 +226,52 @@ assessment error
 → ErrorRecord resolved
 ```
 
-### E. Domain Extensions
+### E. Today Plan / Read Model
+
+- `today-plan-smoke.mjs`
+
+它验证：
+
+- 四领域共用同一个计划结构；
+- 10 张 Practice / 5 张新卡限制；
+- ErrorRecord 重验证与 FSRS 配额分离；
+- 韩语阶段验收节点可被统一计划识别；
+- 页面每日统计可直接由 StudyEvent 驱动。
+
+### F. Domain Extensions
 
 专项扩展拥有自己的 Smoke Test，但不得代替平台核心测试：
 
 - 手机 Product Lab：`product-lab-smoke.mjs` / `adaptive-loop-smoke.mjs`
-- 韩语阶段验收：由平台 adaptive smoke + 后续专项测试覆盖
+- 韩语阶段验收：平台 adaptive smoke + 韩语专项逻辑共同覆盖
 - 零售空间案例：后续独立 interaction smoke
 - 行业证据题：后续独立 evidence smoke
 
-## 5. 后续开发优先级
+## 6. 后续开发优先级
 
-### P0｜保持平台契约全绿
+### P0｜保持平台契约全绿｜持续
 
 任何领域升级都不能破坏另外三个领域。
 
-### P1｜Today Plan 统一
+### P1｜统一 Today Plan｜✅ V0.12 第一版完成
 
-Today Plan 最终不是“到期卡数量”，而是：
+已经完成四领域统一计划对象与页面显示；后续只迭代优先级算法，不再回到四套独立 Today 逻辑。
 
-```text
-当前 Curriculum 新内容
-+ FSRS Due
-+ Learner Model 高价值弱项
-+ 必要 Assessment / Revalidation
-```
+### P2｜页面原生消费 StudyEvent｜🚧 进行中
 
-系统需要控制总负荷，避免所有模块各自往 Today 塞任务。
+已完成第一批消费者：
 
-### P2｜页面原生消费 StudyEvent
+- Today Plan；
+- 首页“今日已复习”；
+- 首页“今日认识”；
+- Lesson 完成状态与 Assessment 完成判断的 Read Model。
 
-逐步减少旧 `history / testResults` 对页面逻辑的主导，让 StudyEvent / Assessment Attempt 成为真正运行时数据源。
+下一步继续迁移：
+
+- 最近正式测试；
+- 普通 Weak Spots 统计；
+- Route / Progress 的更多读取逻辑；
+- 最终减少旧 `history / testResults` 对页面逻辑的主导。
 
 ### P3｜跨领域 Learner Signal 推荐
 
@@ -231,7 +290,7 @@ Today Plan 最终不是“到期卡数量”，而是：
 
 在数据模型稳定后再做 IndexedDB / 云端同步，避免先同步一套仍在变化的数据结构。
 
-## 6. 开发判断原则
+## 7. 开发判断原则
 
 以后增加功能时先问五个问题：
 
