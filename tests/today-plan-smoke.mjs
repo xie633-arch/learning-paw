@@ -27,6 +27,7 @@ try {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof window.__TODAY_PLAN_V12__?.build === 'function');
   await page.waitForFunction(() => typeof window.__STUDY_EVENT_READ_MODEL_V12__?.deriveTodayPracticeStats === 'function');
+  await page.waitForFunction(() => typeof window.__LEARNER_RECOMMENDATION_V13__?.rankActiveErrorRecommendations === 'function');
   await page.waitForFunction(() => Boolean(window.__LEARNING_PAW_UX_V08__?.activateTab));
 
   async function selectDomain(domainId) {
@@ -130,16 +131,27 @@ try {
     return (state.errorRecords || []).some(record => record.domain === 'retail' && record.concept_id === 'retail-need-state' && record.status === 'active');
   }, STORAGE_KEY);
   await page.waitForFunction(() => window.__TODAY_PLAN_V12__?.current?.domainId === 'retail' && window.__TODAY_PLAN_V12__.current.revalidation.planned > 0);
+  await page.waitForFunction(() => window.__STUDY_EVENT_UI_V122__?.current?.domainId === 'retail' && window.__STUDY_EVENT_UI_V122__.current.weakOrder?.length > 0);
 
-  const retailAfter = await page.evaluate(() => window.__TODAY_PLAN_V12__.current);
+  const convergence = await page.evaluate(() => ({
+    plan: window.__TODAY_PLAN_V12__.current,
+    weak: window.__STUDY_EVENT_UI_V122__.current.weakOrder[0],
+  }));
+  const retailAfter = convergence.plan;
+  const weakTop = convergence.weak;
+
   assert(retailAfter.revalidation.planned === 1, `retail: expected one priority revalidation, got ${retailAfter.revalidation.planned}`);
+  assert(retailAfter.revalidation.source === 'LearnerRecommendation + ErrorRecord', `retail: Today Plan still uses legacy revalidation ordering: ${retailAfter.revalidation.source}`);
   assert(retailAfter.review.count === reviewBefore, `retail: remediation changed FSRS review quota (${reviewBefore} -> ${retailAfter.review.count})`);
+  assert(retailAfter.revalidation.errorIds[0] === weakTop.errorId, `retail: Today Plan and Weak Spots disagree on top error (${retailAfter.revalidation.errorIds[0]} vs ${weakTop.errorId})`);
+  assert(retailAfter.revalidation.recommendationScores[0] === weakTop.priorityScore, `retail: Today Plan and Weak Spots disagree on recommendation score (${retailAfter.revalidation.recommendationScores[0]} vs ${weakTop.priorityScore})`);
+  assert(retailAfter.revalidation.actions[0] === weakTop.action, `retail: Today Plan and Weak Spots disagree on recommended action (${retailAfter.revalidation.actions[0]} vs ${weakTop.action})`);
 
   const retailText = (await page.locator('#todayPlanOverview').textContent()) || '';
   assert(retailText.includes('1 项优先重验证'), `retail: Today Plan did not surface weak revalidation: ${retailText}`);
 
   await context.close();
-  console.log('Today Plan smoke OK: four domains share planning; StudyEvent drives daily stats; review 10/5 limits remain independent from remediation.');
+  console.log('Today Plan smoke OK: four domains share planning; StudyEvent drives daily stats; review 10/5 limits stay independent; Today Plan and Weak Spots share one recommendation queue.');
 } finally {
   await browser.close();
 }
