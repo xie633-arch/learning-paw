@@ -28,6 +28,10 @@ if (legacyPuraSource) {
   legacyPuraSource.focus = 'Pura 90 系列影像、设计语言与当前产品视觉辨识';
 }
 
+// V0.14 deepens the Retail domain with the reusable business-district battle system:
+// objective × district × position × partner -> one-store-one-plan -> war-room review.
+await import('./retail-business-district-v14.js');
+
 await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
 await import('./korean-practice-month1-v06.js');
