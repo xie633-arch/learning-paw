@@ -85,6 +85,9 @@ jobs:
       - name: StudyEvent read model smoke test
         run: node tests/study-event-read-model-smoke.mjs
 
+      - name: Recommendation engine smoke test
+        run: node tests/recommendation-engine-smoke.mjs
+
       - name: Curriculum content integrity
         run: node tests/content-integrity.mjs
 
