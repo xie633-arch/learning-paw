@@ -24,6 +24,7 @@ const APP_SHELL = [
   './study-event-read-model-v12.js',
   './study-event-ui-v122.js',
   './learner-recommendation-v13.js',
+  './recommendation-ui-v13.js',
   './lesson-content-v05.js',
   './learning-ui-v05.js',
   './phone-knowledge-v09.js',
