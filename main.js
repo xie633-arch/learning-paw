@@ -52,6 +52,9 @@ await import('./adaptive-metadata-v11.js');
 // Migrate legacy history/test results into StudyEvent v1 + Assessment Attempt
 // before app.js reads localStorage, while keeping the current UI backward-compatible.
 await import('./learner-data-v1.js');
+// V0.11.3 prevents the base app's older in-memory state from overwriting newer
+// StudyEvent / ErrorRecord facts written by adaptive-learning modules.
+await import('./state-write-guard-v113.js');
 // V0.11.1 upgrades already-migrated formal-test attempts/events with stable
 // concept and skill metadata so existing learner history also becomes actionable.
 await import('./formal-test-adapter-v111.js');
