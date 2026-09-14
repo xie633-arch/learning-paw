@@ -1,4 +1,4 @@
-const VERSION = '0.13.0';
+const VERSION = '0.13.1';
 
 function asArray(value) {
   return Array.isArray(value) ? value : [];
@@ -27,6 +27,12 @@ function severityWeight(severity) {
   if (severity === 'high') return 52;
   if (severity === 'medium') return 38;
   return 24;
+}
+
+function fallbackErrorPriority(record) {
+  if (record?.severity === 'high') return 100;
+  if (record?.severity === 'medium') return 66;
+  return 40;
 }
 
 function recallWeakness(signal) {
@@ -257,6 +263,56 @@ export function rankLearningRecommendations(state, domainId, {
     .slice(0, Math.max(0, limit));
 }
 
+export function rankActiveErrorRecommendations(state, domainId, {
+  now = new Date(),
+  limit = Infinity,
+} = {}) {
+  if (!domainId) throw new Error('domainId is required');
+  const activeErrors = asArray(state?.errorRecords)
+    .filter(record => record.domain === domainId && record.status === 'active');
+  const normalizedLimit = Number.isFinite(limit)
+    ? Math.max(0, Math.floor(limit))
+    : activeErrors.length;
+  if (!activeErrors.length || normalizedLimit === 0) return [];
+
+  const recommendations = rankLearningRecommendations(state, domainId, {
+    now,
+    limit: Math.max(activeErrors.length, 1),
+    minimumScore: 0,
+  });
+  const byErrorId = new Map(activeErrors.filter(record => record.error_id).map(record => [record.error_id, record]));
+  const used = new Set();
+  const ranked = [];
+
+  recommendations.forEach(recommendation => {
+    const error = recommendation.error_id ? byErrorId.get(recommendation.error_id) : null;
+    if (!error || used.has(error.error_id)) return;
+    used.add(error.error_id);
+    ranked.push({
+      error,
+      recommendation,
+      priority_score: recommendation.priority_score,
+      action: recommendation.action,
+    });
+  });
+
+  activeErrors
+    .filter(error => !used.has(error.error_id))
+    .sort((a, b) => fallbackErrorPriority(b) - fallbackErrorPriority(a)
+      || Number(b.occurrences || 0) - Number(a.occurrences || 0)
+      || new Date(b.last_seen_at || 0).getTime() - new Date(a.last_seen_at || 0).getTime())
+    .forEach(error => {
+      ranked.push({
+        error,
+        recommendation: null,
+        priority_score: fallbackErrorPriority(error),
+        action: error.next_action || (error.error_type === 'assessment_error' ? 'targeted_review_then_revalidate' : 'spaced_recall'),
+      });
+    });
+
+  return ranked.slice(0, normalizedLimit);
+}
+
 export function recommendationSummary(state, domainId, options = {}) {
   const ranked = rankLearningRecommendations(state, domainId, options);
   return {
@@ -272,6 +328,7 @@ if (typeof window !== 'undefined') {
   window.__LEARNER_RECOMMENDATION_V13__ = {
     version: VERSION,
     rankLearningRecommendations,
+    rankActiveErrorRecommendations,
     recommendationSummary,
   };
 }
