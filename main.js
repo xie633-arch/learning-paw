@@ -145,3 +145,7 @@ await import('./today-plan-v12.js');
 // V0.12.2 migrates the second batch of home views to the StudyEvent read model:
 // route progress, weak summary and latest assessment are now fact-derived views.
 await import('./study-event-ui-v122.js');
+
+// V0.13 starts P3: one domain-agnostic Concept × Skill recommender ranks learner
+// evidence and proposes the next remediation mode. UI consumption comes next.
+await import('./learner-recommendation-v13.js');
