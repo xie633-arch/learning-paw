@@ -2,13 +2,17 @@ import { KOREAN_VOCAB_ITEMS_V15 } from './korean-vocab-v15.js';
 import { hangulGatePassed } from './korean-hangul-gate-compat-v071.js';
 
 const STORAGE_KEY = 'personal-learning-os:v0.1';
-const VERSION = '0.15.0';
+const VERSION = '0.15.1';
 const itemById = new Map(KOREAN_VOCAB_ITEMS_V15.map(item => [item.id, item]));
 let renderQueued = false;
 
 function readState() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
   catch { return {}; }
+}
+
+function setText(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
 }
 
 function reviewCount(cardId) {
@@ -61,8 +65,10 @@ function promptFor(item, mode) {
 function decorateAnswer(item) {
   const answer = document.querySelector('#referenceAnswer');
   if (!answer) return;
+  const existing = answer.querySelector('.kv15-answer');
+  if (existing?.dataset.vocabId === item.id) return;
   answer.innerHTML = `
-    <div class="kv15-answer">
+    <div class="kv15-answer" data-vocab-id="${item.id}">
       <div class="kv15-word">${item.word}</div>
       <div class="kv15-meaning">${item.meaning}</div>
       <div class="kv15-meta"><span>${item.pos}</span><span>${item.level}</span></div>
@@ -77,9 +83,12 @@ function resetGenericReview(card) {
   const answerLabel = document.querySelector('#answerLabel');
   const selfAnswer = document.querySelector('#selfAnswer');
   const reveal = document.querySelector('#revealBtn');
-  if (answerLabel) answerLabel.textContent = '先写下你的理解';
-  if (selfAnswer) { selfAnswer.placeholder = '不用追求完整，先把你真正能回忆出来的内容写下来……'; selfAnswer.rows = 6; }
-  if (reveal) reveal.textContent = '查看参考答案';
+  setText(answerLabel, '先写下你的理解');
+  if (selfAnswer) {
+    if (selfAnswer.placeholder !== '不用追求完整，先把你真正能回忆出来的内容写下来……') selfAnswer.placeholder = '不用追求完整，先把你真正能回忆出来的内容写下来……';
+    if (selfAnswer.rows !== 6) selfAnswer.rows = 6;
+  }
+  setText(reveal, '查看参考答案');
 }
 
 function renderReview() {
@@ -88,46 +97,48 @@ function renderReview() {
   if (!card || !question) return;
 
   const raw = question.textContent?.trim() || '';
-  let id = raw.startsWith('KV15:') ? raw.slice(5) : card.dataset.kv15Id || '';
+  const id = raw.startsWith('KV15:') ? raw.slice(5) : card.dataset.kv15Id || '';
   const item = itemById.get(id);
   if (!item) {
     if (card.dataset.kv15Id) resetGenericReview(card);
     return;
   }
 
-  card.dataset.kv15Id = id;
+  if (card.dataset.kv15Id !== id) card.dataset.kv15Id = id;
   const count = reviewCount(id);
   const mode = modeForCount(count);
   card.classList.remove('kv15-recognition','kv15-recall','kv15-listening','kv15-context');
   card.classList.add('kv15-card', `kv15-${mode}`);
 
   const desiredPrompt = promptFor(item, mode);
-  if (question.textContent !== desiredPrompt) question.textContent = desiredPrompt;
-  question.style.whiteSpace = mode === 'context' ? 'pre-line' : '';
+  setText(question, desiredPrompt);
+  const whiteSpace = mode === 'context' ? 'pre-line' : '';
+  if (question.style.whiteSpace !== whiteSpace) question.style.whiteSpace = whiteSpace;
 
   const category = document.querySelector('#categoryLabel');
-  if (category) category.textContent = `核心词汇 · ${modeLabel(mode)}`;
+  setText(category, `核心词汇 · ${modeLabel(mode)}`);
   const deck = document.querySelector('#deckLabel');
-  if (deck) deck.textContent = `韩语 · ${item.level}`;
+  setText(deck, `韩语 · ${item.level}`);
 
   const audio = document.querySelector('#audioPromptBtn');
   if (audio) {
     audio.classList.remove('hidden');
-    audio.textContent = mode === 'listening' ? '🔊 播放声音' : '🔊 听单词发音';
+    setText(audio, mode === 'listening' ? '🔊 播放声音' : '🔊 听单词发音');
   }
   const answerLabel = document.querySelector('#answerLabel');
-  if (answerLabel) answerLabel.textContent = mode === 'listening' ? '听到什么就写什么' : '先主动回忆，再看答案';
+  setText(answerLabel, mode === 'listening' ? '听到什么就写什么' : '先主动回忆，再看答案');
   const selfAnswer = document.querySelector('#selfAnswer');
   if (selfAnswer) {
-    selfAnswer.rows = 2;
-    selfAnswer.placeholder = mode === 'listening' ? '用韩语键盘输入你听到的词…' : mode === 'recall' ? '可选：先输入你想到的韩语…' : '可选：先写下你的答案…';
+    if (selfAnswer.rows !== 2) selfAnswer.rows = 2;
+    const placeholder = mode === 'listening' ? '用韩语键盘输入你听到的词…' : mode === 'recall' ? '可选：先输入你想到的韩语…' : '可选：先写下你的答案…';
+    if (selfAnswer.placeholder !== placeholder) selfAnswer.placeholder = placeholder;
   }
   const reveal = document.querySelector('#revealBtn');
-  if (reveal) reveal.textContent = '显示答案';
+  setText(reveal, '显示答案');
   const speakAnswer = document.querySelector('#speakAnswerBtn');
   if (speakAnswer) {
     speakAnswer.classList.remove('hidden');
-    speakAnswer.textContent = '🔊 听例句';
+    setText(speakAnswer, '🔊 听例句');
     if (speakAnswer.dataset.kv15Bound !== id) {
       speakAnswer.dataset.kv15Bound = id;
       speakAnswer.addEventListener('click', event => {
@@ -144,9 +155,12 @@ function renderReview() {
   const ratingGood = document.querySelector('[data-rating="good"]');
   const ratingHard = document.querySelector('[data-rating="hard"]');
   const ratingAgain = document.querySelector('[data-rating="again"]');
-  if (ratingGood) ratingGood.innerHTML = '✅<strong>记得</strong><span>可以独立回忆</span>';
-  if (ratingHard) ratingHard.innerHTML = '🟡<strong>模糊</strong><span>想到了但不稳定</span>';
-  if (ratingAgain) ratingAgain.innerHTML = '❌<strong>忘记</strong><span>需要尽快再见</span>';
+  const goodHtml = '✅<strong>记得</strong><span>可以独立回忆</span>';
+  const hardHtml = '🟡<strong>模糊</strong><span>想到了但不稳定</span>';
+  const againHtml = '❌<strong>忘记</strong><span>需要尽快再见</span>';
+  if (ratingGood && ratingGood.innerHTML !== goodHtml) ratingGood.innerHTML = goodHtml;
+  if (ratingHard && ratingHard.innerHTML !== hardHtml) ratingHard.innerHTML = hardHtml;
+  if (ratingAgain && ratingAgain.innerHTML !== againHtml) ratingAgain.innerHTML = againHtml;
 
   if (mode === 'listening' && card.dataset.kv15AutoPlayed !== `${id}:${count}`) {
     card.dataset.kv15AutoPlayed = `${id}:${count}`;
@@ -163,9 +177,9 @@ function syncHome() {
   const title = firstPanel.querySelector('strong');
   const subtitle = firstPanel.querySelector('span.muted.small');
   const passed = hangulGatePassed(readState());
-  if (title) title.textContent = '词汇记忆';
-  if (subtitle) subtitle.textContent = passed ? 'FSRS 排程 · 韩→中 / 中→韩 / 听音训练 · 单词与例句双发音' : '韩文字母通关后解锁；先用网课完成字母学习';
-  if (passed) start.textContent = '开始韩语词汇训练';
+  setText(title, '词汇记忆');
+  setText(subtitle, passed ? 'FSRS 排程 · 韩→中 / 中→韩 / 听音训练 · 单词与例句双发音' : '韩文字母通关后解锁；先用网课完成字母学习');
+  if (passed) setText(start, '开始韩语词汇训练');
 
   let note = firstPanel.querySelector('.kv15-gate-note');
   if (!passed) {
@@ -174,8 +188,10 @@ function syncHome() {
       note.className = 'kv15-gate-note';
       firstPanel.append(note);
     }
-    note.textContent = '当前阶段：站外自学韩文字母 → 回 Learning Paw 参加通关考核。通过后词汇训练与后续课程自动解锁。';
-  } else note?.remove();
+    setText(note, '当前阶段：站外自学韩文字母 → 回 Learning Paw 参加通关考核。通过后词汇训练与后续课程自动解锁。');
+  } else if (note) {
+    note.remove();
+  }
 }
 
 function scheduleRender() {
@@ -192,7 +208,13 @@ ensureStyles();
 scheduleRender();
 ['#questionText','#referenceBlock','#domainName','#todayLessonTitle','#trainingHub'].forEach(selector => {
   const node = document.querySelector(selector);
-  if (node) new MutationObserver(scheduleRender).observe(node, { childList:true, subtree:true, characterData:true, attributes:selector === '#referenceBlock', attributeFilter:selector === '#referenceBlock' ? ['class'] : undefined });
+  if (node) new MutationObserver(scheduleRender).observe(node, {
+    childList:true,
+    subtree:true,
+    characterData:true,
+    attributes:selector === '#referenceBlock',
+    attributeFilter:selector === '#referenceBlock' ? ['class'] : undefined,
+  });
 });
 
 document.querySelector('#audioPromptBtn')?.addEventListener('click', event => {
