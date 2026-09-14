@@ -83,6 +83,30 @@ function scoreCandidate(signal, errors, now) {
   const lastSeen = primaryError?.last_seen_at || signal?.last_seen_at || null;
   const recency = ageDays(lastSeen, now);
 
+  // A successful single-point revalidation resolves the current remediation loop.
+  // Historical misses remain evidence, but cannot reopen a recommendation unless a new active error exists.
+  if (!primaryError && passedRevalidations > failedRevalidations && passedRevalidations > 0) {
+    return {
+      score: 0,
+      reasons: [{
+        code: 'resolved_by_revalidation',
+        weight: -100,
+        text: '该 Concept × Skill 已通过后续重验证，等待新的真实错误再重新进入推荐',
+      }],
+      primaryError: null,
+      evidence: {
+        attempts,
+        occurrences,
+        assessmentIncorrect: assessment.incorrect,
+        assessmentTotal: assessment.total,
+        recallWeaknessRatio: Number(recall.ratio.toFixed(3)),
+        failedRevalidations,
+        passedRevalidations,
+        lastSeenAt: lastSeen,
+      },
+    };
+  }
+
   let score = primaryError ? severityWeight(primaryError.severity) : 0;
   const reasons = [];
 
@@ -118,7 +142,7 @@ function scoreCandidate(signal, errors, now) {
     reasons.push({
       code: 'recall_weakness',
       weight,
-      text: `主动回忆中仍有模糊或不认识记录`,
+      text: '主动回忆中仍有模糊或不认识记录',
     });
   }
 
@@ -129,16 +153,6 @@ function scoreCandidate(signal, errors, now) {
       code: 'failed_revalidation',
       weight,
       text: `针对性重验证失败 ${failedRevalidations} 次`,
-    });
-  }
-
-  if (passedRevalidations > 0 && !primaryError) {
-    const weight = -Math.min(18, passedRevalidations * 9);
-    score += weight;
-    reasons.push({
-      code: 'successful_revalidation',
-      weight,
-      text: `已有 ${passedRevalidations} 次成功重验证，优先级下降`,
     });
   }
 
