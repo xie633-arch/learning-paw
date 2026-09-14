@@ -5,7 +5,7 @@ import {
   deriveWeakSignals,
   deriveLatestAssessment,
 } from './study-event-read-model-v12.js';
-import { rankLearningRecommendations } from './learner-recommendation-v13.js';
+import { rankActiveErrorRecommendations } from './learner-recommendation-v13.js';
 
 const STORAGE_KEY = 'personal-learning-os:v0.1';
 const VERSION = '0.12.2';
@@ -95,34 +95,28 @@ function fallbackPriority(weak) {
   return 40;
 }
 
-function recommendationKey(item) {
-  return `${item.conceptId || `content:${item.contentId || 'unknown'}`}::${item.skill || 'general'}`;
-}
-
 function rankWeakSignals(state, domainId) {
   const activeWeak = deriveWeakSignals(state, domainId, 100);
-  const recommendations = rankLearningRecommendations(state, domainId, {
-    limit: 100,
-    minimumScore: 0,
-  });
-  const byErrorId = new Map(recommendations.filter(item => item.error_id).map(item => [item.error_id, item]));
-  const bySignal = new Map(recommendations.map(item => [
-    `${item.concept_id || `content:${item.content_id || 'unknown'}`}::${item.skill || 'general'}`,
-    item,
-  ]));
+  const queue = rankActiveErrorRecommendations(state, domainId, { limit: 100 });
+  const queueByErrorId = new Map(queue
+    .filter(entry => entry.error?.error_id)
+    .map((entry, index) => [entry.error.error_id, { ...entry, index }]));
 
   return activeWeak
-    .map(item => ({
-      ...item,
-      recommendation: byErrorId.get(item.errorId) || bySignal.get(recommendationKey(item)) || null,
-    }))
-    .sort((a, b) => {
-      const aScore = a.recommendation?.priority_score ?? fallbackPriority(a);
-      const bScore = b.recommendation?.priority_score ?? fallbackPriority(b);
-      return bScore - aScore
-        || Number(b.occurrences || 0) - Number(a.occurrences || 0)
-        || new Date(b.lastSeenAt || 0).getTime() - new Date(a.lastSeenAt || 0).getTime();
-    });
+    .map(item => {
+      const queueEntry = item.errorId ? queueByErrorId.get(item.errorId) : null;
+      return {
+        ...item,
+        recommendation: queueEntry?.recommendation || null,
+        recommendationPriority: queueEntry?.priority_score ?? fallbackPriority(item),
+        recommendationAction: queueEntry?.action || null,
+        recommendationIndex: queueEntry?.index ?? Number.MAX_SAFE_INTEGER,
+      };
+    })
+    .sort((a, b) => a.recommendationIndex - b.recommendationIndex
+      || b.recommendationPriority - a.recommendationPriority
+      || Number(b.occurrences || 0) - Number(a.occurrences || 0)
+      || new Date(b.lastSeenAt || 0).getTime() - new Date(a.lastSeenAt || 0).getTime());
 }
 
 function patchWeak(state, domainId) {
@@ -152,7 +146,7 @@ function patchWeak(state, domainId) {
     row.className = 'weak-item';
     row.dataset.errorId = item.errorId || '';
     row.dataset.conceptId = item.conceptId || '';
-    row.dataset.recommendationScore = String(item.recommendation?.priority_score ?? fallbackPriority(item));
+    row.dataset.recommendationScore = String(item.recommendationPriority);
 
     const copy = document.createElement('div');
     const title = document.createElement('strong');
@@ -166,7 +160,7 @@ function patchWeak(state, domainId) {
     const meter = document.createElement('div');
     meter.className = 'weak-meter';
     const bar = document.createElement('span');
-    const priorityScore = item.recommendation?.priority_score ?? fallbackPriority(item);
+    const priorityScore = item.recommendationPriority;
     bar.style.width = `${Math.max(12, Math.min(100, priorityScore))}%`;
     meter.append(bar);
     const score = document.createElement('div');
@@ -219,8 +213,8 @@ function patchAll() {
     weakOrder: weak.map(item => ({
       errorId: item.errorId,
       conceptId: item.conceptId,
-      priorityScore: item.recommendation?.priority_score ?? fallbackPriority(item),
-      action: item.recommendation?.action || null,
+      priorityScore: item.recommendationPriority,
+      action: item.recommendationAction || item.recommendation?.action || null,
     })),
     latestAssessment,
   };
