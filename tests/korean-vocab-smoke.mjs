@@ -1,5 +1,5 @@
-import './korean-v04.js';
-import './korean-hangul-gate-v07.js';
+import '../korean-v04.js';
+import '../korean-hangul-gate-v07.js';
 import { curricula } from '../platform-data.js';
 import { koreanAssessments, koreanAssessmentStages } from '../korean-assessment-data-v05.js';
 import { KOREAN_VOCAB_ITEMS_V15, buildVocabCard, vocabTrainingMode, unlockedVocabItems } from '../korean-vocab-v15.js';
