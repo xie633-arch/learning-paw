@@ -25,12 +25,14 @@ try {
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => Boolean(window.__PHONE_PRODUCT_LAB_V091__));
+  await page.waitForFunction(() => Boolean(window.__LEARNING_PAW_UX_V08__));
   const meta = await page.evaluate(() => window.__PHONE_PRODUCT_LAB_V091__ || null);
   assert(meta?.version === '0.9.1', `Product Lab metadata missing: ${JSON.stringify(meta)}`);
   assert(meta?.cases === 5, `expected 5 Product Lab cases, got ${meta?.cases}`);
   assert(meta?.verifiedAt === '2026-09-13', `unexpected verified date: ${meta?.verifiedAt}`);
 
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
+  await page.waitForFunction(() => !document.querySelector('#domainHub')?.classList.contains('ux-tab-inactive'));
   await page.locator('[data-domain="phone"]').click();
   await page.locator('#mobileBottomNav button[data-target="routeCard"]').click();
   await page.locator('#phoneProductLab').waitFor({ state: 'visible' });
