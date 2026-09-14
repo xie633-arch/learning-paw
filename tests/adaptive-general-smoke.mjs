@@ -54,6 +54,7 @@ try {
     return (state.errorRecords || []).some(record => record.content_id === 'hardware-soc-001' && record.status === 'active' && record.error_type === 'recall_gap');
   }, STORAGE_KEY);
   const recallRow = page.locator('.al-error').filter({ hasText: 'SoC 是什么？' });
+  await recallRow.waitFor({ state: 'visible' });
   assert(await recallRow.count() === 1, 'recall-gap item did not appear in generic Error Bank');
   await recallRow.locator('[data-adaptive-revalidate]').click();
   await page.locator('#adaptiveLearningOverlay').waitFor({ state: 'visible' });
@@ -93,6 +94,7 @@ try {
     return (state.errorRecords || []).some(record => record.concept_id === 'phone-system-sustained-experience' && record.skill === 'system-linking' && record.status === 'active');
   }, STORAGE_KEY);
   const formalRow = page.locator('.al-error').filter({ hasText: '用户说“芯片强就一定长期流畅”，最完整的回应是？' });
+  await formalRow.waitFor({ state: 'visible' });
   assert(await formalRow.count() === 1, 'formal-test concept error did not appear in generic Error Bank');
   await formalRow.locator('[data-adaptive-revalidate]').click();
   const formalOptions = page.locator('#adaptiveLearningOverlay .al-option');
@@ -125,6 +127,7 @@ try {
   await page.locator('[data-domain="korean"]').click();
   await page.locator('#mobileBottomNav button[data-target="weakCard"]').click();
   const koreanRow = page.locator('.al-error').filter({ hasText: '下面哪个词有 받침？' });
+  await koreanRow.waitFor({ state: 'visible' });
   assert(await koreanRow.count() === 1, 'Korean Exit Check error did not appear in generic Error Bank');
   await koreanRow.locator('[data-adaptive-revalidate]').click();
   const koreanOptions = page.locator('#adaptiveLearningOverlay .al-option');
