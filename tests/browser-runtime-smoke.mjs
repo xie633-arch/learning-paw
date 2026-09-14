@@ -35,7 +35,18 @@ async function assertResponsive(page, label) {
 }
 
 async function clickDomain(page, id, expectedName) {
-  await page.locator(`[data-domain="${id}"]`).click();
+  const selector = `[data-domain="${id}"]`;
+  const button = page.locator(selector);
+  await button.waitFor({ state: 'visible' });
+  // Domain cards are progressively enhanced by several late UI observers. This smoke
+  // verifies the routing contract rather than pointer hit-testing, so wait for two
+  // settled frames and dispatch the DOM click after the final enhancement layer loads.
+  await assertResponsive(page, `domain ${id} before click`);
+  await page.evaluate(domainId => {
+    const target = document.querySelector(`[data-domain="${domainId}"]`);
+    if (!target) throw new Error(`domain button missing: ${domainId}`);
+    target.click();
+  }, id);
   await page.waitForFunction(name => document.querySelector('#domainName')?.textContent?.trim() === name, expectedName);
   await assertResponsive(page, `domain ${id}`);
 }
@@ -101,9 +112,11 @@ async function runMobileSmoke(browser) {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.locator('#todayLearningCard').waitFor({ state: 'visible' });
   await page.locator('#mobileBottomNav').waitFor({ state: 'visible' });
-  // main.js progressively layers UX modules after the base app. Wait for V0.8 so
-  // smoke assertions observe the final daily-plan semantics, not an intermediate DOM.
+  // main.js progressively layers UX modules after the base app. Wait for both the
+  // shared tab controller and the late Korean extension so smoke assertions observe
+  // the final DOM rather than an intermediate render.
   await page.waitForFunction(() => window.__LEARNING_PAW_UX_V08__?.version === '0.8.0');
+  await page.waitForFunction(() => window.__KOREAN_VOCAB_UI_V15__?.version === '0.15.0');
   await assertResponsive(page, 'initial load');
 
   const knowledgeMeta = await page.evaluate(() => window.__PHONE_KNOWLEDGE_V09__ || null);
@@ -181,7 +194,8 @@ async function runMobileSmoke(browser) {
   await openGenericLesson(page, 'industry');
   await closeGenericLesson(page);
 
-  // Korean: verify Day 0 reader and staged assessment integration.
+  // Korean: the first learning action is now an external-study prerequisite gate,
+  // not an in-app Day 0/Week 1 alphabet course.
   await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'korean', '韩语');
   await activateMobileTab(page, 'todayLearningCard');
@@ -189,16 +203,19 @@ async function runMobileSmoke(browser) {
   await koreanButton.waitFor({ state: 'visible' });
   await koreanButton.click();
   await page.locator('#koreanLessonReaderOverlay:not(.hidden)').waitFor({ state: 'visible' });
-  await assertResponsive(page, 'Korean Day 0 reader');
+  await assertResponsive(page, 'Korean Hangul gate reader');
 
   const koreanTitle = (await page.locator('#koreanReaderTitle').textContent())?.trim() || '';
-  assert(koreanTitle.includes('Day 0'), `expected Day 0 Korean lesson, got ${koreanTitle}`);
+  assert(koreanTitle.includes('韩文字母通关考核'), `expected Hangul prerequisite gate, got ${koreanTitle}`);
   const primary = page.locator('#koreanLessonReaderOverlay .korean-reader-actions .primary');
   await primary.waitFor({ state: 'visible' });
-  assert((await primary.textContent())?.includes('Day 0'), 'Korean completion guard label did not sync');
+  assert((await primary.textContent())?.includes('韩文字母通关考核'), 'Korean completion guard did not route the gate to assessment');
   await primary.click();
   await page.locator('#koAssessOverlay:not(.hidden)').waitFor({ state: 'visible' });
-  await assertResponsive(page, 'Korean baseline assessment');
+  await assertResponsive(page, 'Korean Hangul gate assessment');
+  const assessmentText = (await page.locator('#koAssessBody').textContent()) || '';
+  assert(assessmentText.includes('韩文字母通关考核'), `wrong Korean assessment opened: ${assessmentText}`);
+  assert(assessmentText.includes('85') || assessmentText.includes('字母'), 'Hangul gate assessment copy is missing prerequisite context');
   await page.locator('#koAssessClose').click();
 
   // Review flow: verify the bounded daily plan can start and exit.
@@ -241,6 +258,7 @@ async function runDesktopSmoke(browser) {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.locator('#uxDesktopTabs').waitFor({ state: 'visible' });
   await page.locator('#todayLearningCard').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => window.__KOREAN_VOCAB_UI_V15__?.version === '0.15.0');
   await assertResponsive(page, 'desktop load');
   await activateDesktopTab(page, 'domains');
   await page.locator('#domainGrid .domain-choice').first().waitFor({ state: 'visible' });
@@ -274,4 +292,4 @@ if (failures.length) {
   throw new Error(`Browser smoke found runtime errors:\n${failures.join('\n')}`);
 }
 
-console.log('Browser runtime smoke OK: V0.9 Phone Knowledge Base + V0.8 tabs/daily plan, mobile + desktop, 4 domains, lessons, Korean baseline, review, test, phone variants/pricing.');
+console.log('Browser runtime smoke OK: V0.9 Phone Knowledge Base + V0.8 tabs/daily plan, mobile + desktop, 4 domains, lessons, Hangul prerequisite gate, review, test, phone variants/pricing.');
