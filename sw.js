@@ -1,4 +1,4 @@
-const CACHE_NAME = 'learning-pwa-v0.11.3';
+const CACHE_NAME = 'learning-pwa-v0.12.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -31,6 +31,7 @@ const APP_SHELL = [
   './phone-adaptive-note-sync-v101.js',
   './adaptive-learning-v11.js',
   './korean-stage-adaptive-v112.js',
+  './today-plan-v12.js',
   './ux-v08.js',
   './visual-ui-v081.js',
   './mobile-domain-grid-v051.js',
