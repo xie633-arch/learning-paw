@@ -131,3 +131,6 @@ await import('./visual-ui-v081.js');
 // V0.11 generalizes the adaptive loop across ordinary recall, phone / retail /
 // industry formal tests, and Korean Exit Checks without inflating today's FSRS quota.
 await import('./adaptive-learning-v11.js');
+// V0.11.2 makes Korean Week 1 / 2 / 3 / Month 1 assessment errors actionable in
+// the same weak-knowledge view with single-item revalidation and resolved state.
+await import('./korean-stage-adaptive-v112.js');
