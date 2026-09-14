@@ -1,6 +1,20 @@
-import { domains as baseDomains, cards as baseCards } from '../cards.js';
-import { curricula, domainOverrides, extraCards, tests } from '../platform-data.js';
-import { koreanAssessments, koreanAssessmentStages } from '../korean-assessment-data-v05.js';
+globalThis.window = globalThis.window || {};
+globalThis.document = globalThis.document || {
+  querySelector() { return null; },
+};
+globalThis.localStorage = globalThis.localStorage || {
+  getItem() { return null; },
+  setItem() {},
+  removeItem() {},
+};
+
+// Korean currently registers its curriculum into the shared platform registry at boot.
+// The contract must validate the effective platform, not only the platform-data literal.
+await import('../korean-v04.js');
+
+const { domains: baseDomains, cards: baseCards } = await import('../cards.js');
+const { curricula, domainOverrides, extraCards, tests } = await import('../platform-data.js');
+const { koreanAssessments, koreanAssessmentStages } = await import('../korean-assessment-data-v05.js');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
