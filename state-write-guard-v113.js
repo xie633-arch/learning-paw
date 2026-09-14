@@ -16,6 +16,42 @@ const APP_OWNED_KEYS = new Set([
   'preferences',
 ]);
 
+let explicitReplacementPending = false;
+let explicitReplacementTimer = null;
+
+function clearExplicitReplacement() {
+  explicitReplacementPending = false;
+  if (explicitReplacementTimer) clearTimeout(explicitReplacementTimer);
+  explicitReplacementTimer = null;
+}
+
+function armExplicitReplacement() {
+  explicitReplacementPending = true;
+  if (explicitReplacementTimer) clearTimeout(explicitReplacementTimer);
+  explicitReplacementTimer = setTimeout(clearExplicitReplacement, 15000);
+}
+
+function consumeExplicitReplacement() {
+  if (!explicitReplacementPending) return false;
+  clearExplicitReplacement();
+  return true;
+}
+
+// The legacy import flow intentionally replaces the device state. Arm a single
+// bypass before app.js handles the selected backup file, so the stale-write guard
+// does not turn an explicit restore into an accidental merge.
+const importInput = document.querySelector('#importInput');
+importInput?.addEventListener('change', armExplicitReplacement, true);
+
+// If the user cancels the import confirmation, clear the one-shot bypass
+// immediately instead of leaving the next unrelated write unguarded.
+const nativeConfirm = window.confirm.bind(window);
+window.confirm = function guardedConfirm(message) {
+  const accepted = nativeConfirm(message);
+  if (explicitReplacementPending && !accepted) clearExplicitReplacement();
+  return accepted;
+};
+
 function parseState(value) {
   try {
     const parsed = JSON.parse(value || '{}');
@@ -61,6 +97,10 @@ function mergeStaleSnapshot(incoming, current) {
 
 Storage.prototype.setItem = function guardedLearningStateWrite(key, value) {
   if (this !== window.localStorage || key !== STORAGE_KEY) {
+    return enrichedSetItem.call(this, key, value);
+  }
+
+  if (consumeExplicitReplacement()) {
     return enrichedSetItem.call(this, key, value);
   }
 
