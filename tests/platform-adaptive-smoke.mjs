@@ -1,6 +1,4 @@
 import { chromium } from 'playwright-core';
-import { tests } from '../platform-data.js';
-import { koreanAssessments } from '../korean-assessment-data-v05.js';
 
 const BASE_URL = process.env.SMOKE_BASE_URL || 'http://127.0.0.1:4173/';
 const CHROME_PATH = process.env.CHROME_PATH || '/usr/bin/google-chrome';
@@ -27,6 +25,7 @@ try {
   }));
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.__ADAPTIVE_METADATA_V11__?.version === '0.11.2');
   await page.waitForFunction(() => window.__ADAPTIVE_LEARNING_V11__?.version === '0.11.0');
   await page.waitForFunction(() => window.__KOREAN_STAGE_ADAPTIVE_V112__?.version === '0.11.2');
   await page.waitForFunction(() => window.__STATE_WRITE_GUARD_V113__?.version === '0.11.3');
@@ -38,59 +37,89 @@ try {
     await page.locator('#mobileBottomNav button[data-target="weakCard"]').click();
   }
 
+  async function runtimeFormalFixture(domainId) {
+    return page.evaluate(async id => {
+      const { tests } = await import('./platform-data.js');
+      const assessment = tests[id];
+      const question = assessment?.questions?.[0];
+      if (!assessment || !question) return null;
+      return {
+        assessmentId: assessment.assessment_id,
+        title: assessment.title,
+        question: {
+          itemId: question.item_id,
+          prompt: question.q,
+          answer: question.answer,
+          explanation: question.explanation,
+          conceptId: question.concept_ids?.[0] || null,
+          skill: question.skill || null,
+        },
+      };
+    }, domainId);
+  }
+
   async function injectFormalError(domainId) {
-    const assessment = tests[domainId];
-    const question = assessment.questions[0];
-    const wrongIndex = question.answer === 0 ? 1 : 0;
+    const fixture = await runtimeFormalFixture(domainId);
+    assert(fixture?.question?.prompt, `${domainId}: runtime formal assessment fixture unavailable`);
+    assert(Number.isInteger(fixture.question.answer), `${domainId}: runtime formal answer metadata missing`);
+    assert(fixture.question.conceptId, `${domainId}: runtime formal concept metadata missing`);
+
+    const wrongIndex = fixture.question.answer === 0 ? 1 : 0;
     const resultId = `platform-${domainId}-formal-1`;
 
-    await page.evaluate(({ key, domainId, assessment, question, wrongIndex, resultId }) => {
+    await page.evaluate(({ key, domainId, fixture, wrongIndex, resultId }) => {
       const state = JSON.parse(localStorage.getItem(key) || '{}');
       state.testResults = [
         ...(state.testResults || []),
         {
           id: resultId,
           domainId,
-          title: assessment.title,
+          title: fixture.title,
           score: 0,
           completedAt: new Date().toISOString(),
           answers: [{
-            question: question.q,
+            question: fixture.question.prompt,
             selectedIndex: wrongIndex,
-            correctIndex: question.answer,
+            correctIndex: fixture.question.answer,
             correct: false,
-            explanation: question.explanation,
+            explanation: fixture.question.explanation,
           }],
         },
       ];
       localStorage.setItem(key, JSON.stringify(state));
-    }, { key: STORAGE_KEY, domainId, assessment, question, wrongIndex, resultId });
+    }, { key: STORAGE_KEY, domainId, fixture, wrongIndex, resultId });
 
-    await page.waitForFunction(({ key, domainId }) => {
+    await page.waitForFunction(({ key, domainId, conceptId }) => {
       const state = JSON.parse(localStorage.getItem(key) || '{}');
       return (state.errorRecords || []).some(record =>
-        record.domain === domainId && record.status === 'active' && record.error_type === 'assessment_error'
+        record.domain === domainId
+        && record.concept_id === conceptId
+        && record.status === 'active'
+        && record.error_type === 'assessment_error'
       );
-    }, { key: STORAGE_KEY, domainId });
+    }, { key: STORAGE_KEY, domainId, conceptId: fixture.question.conceptId });
 
     await chooseDomain(domainId);
     await page.evaluate(() => window.__ADAPTIVE_LEARNING_V11__.render());
 
-    const row = page.locator('.al-error').filter({ hasText: question.q });
+    const row = page.locator('.al-error').filter({ hasText: fixture.question.prompt });
     await row.waitFor({ state: 'visible' });
     assert(await row.locator('[data-adaptive-revalidate]').count() === 1, `${domainId}: formal error is not actionable`);
 
     await row.locator('[data-adaptive-revalidate]').click();
     const overlay = page.locator('#adaptiveLearningOverlay');
     await overlay.waitFor({ state: 'visible' });
-    await overlay.locator('.al-option').nth(question.answer).click();
+    await overlay.locator('.al-option').nth(fixture.question.answer).click();
 
-    await page.waitForFunction(({ key, domainId }) => {
+    await page.waitForFunction(({ key, domainId, conceptId }) => {
       const state = JSON.parse(localStorage.getItem(key) || '{}');
       return (state.errorRecords || []).some(record =>
-        record.domain === domainId && record.status === 'resolved' && record.error_type === 'assessment_error'
+        record.domain === domainId
+        && record.concept_id === conceptId
+        && record.status === 'resolved'
+        && record.error_type === 'assessment_error'
       );
-    }, { key: STORAGE_KEY, domainId });
+    }, { key: STORAGE_KEY, domainId, conceptId: fixture.question.conceptId });
 
     await overlay.locator('.al-row button').filter({ hasText: '关闭' }).click();
   }
@@ -99,51 +128,75 @@ try {
     await injectFormalError(domainId);
   }
 
-  const koreanAssessment = koreanAssessments.week1;
-  const koreanItem = koreanAssessment.items.find(item => item.type === 'mcq');
-  assert(koreanItem, 'korean: no objective Week 1 item available for platform smoke');
-  const koreanWrongIndex = koreanItem.correct_answer === 0 ? 1 : 0;
+  const koreanFixture = await page.evaluate(async () => {
+    const { koreanAssessments } = await import('./korean-assessment-data-v05.js');
+    const assessment = koreanAssessments.week1;
+    const item = assessment?.items?.find(candidate => candidate.type === 'mcq');
+    if (!assessment || !item) return null;
+    return {
+      assessment: {
+        assessmentId: assessment.assessment_id,
+        name: assessment.name,
+        maxScore: assessment.max_score,
+      },
+      item: {
+        itemId: item.item_id,
+        sectionId: item.section_id,
+        skill: item.skill,
+        conceptIds: item.concept_ids,
+        prompt: item.prompt,
+        correctAnswer: item.correct_answer,
+        maxScore: item.max_score,
+        explanation: item.explanation,
+      },
+    };
+  });
 
-  await page.evaluate(({ key, assessment, item, wrongIndex }) => {
+  assert(koreanFixture?.item?.prompt, 'korean: no objective Week 1 runtime item available for platform smoke');
+  const koreanWrongIndex = koreanFixture.item.correctAnswer === 0 ? 1 : 0;
+
+  await page.evaluate(({ key, fixture, wrongIndex }) => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
+    const now = new Date().toISOString();
     state.assessmentAttempts = [
       ...(state.assessmentAttempts || []),
       {
         schema_version: '1.0',
         attempt_id: 'platform-korean-week1-1',
-        assessment_id: assessment.assessment_id,
+        assessment_id: fixture.assessment.assessmentId,
         domain: 'korean',
-        started_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
+        started_at: now,
+        completed_at: now,
         score: 0,
-        max_score: assessment.max_score,
+        max_score: fixture.assessment.maxScore,
         section_scores: {},
         item_results: [{
-          item_id: item.item_id,
-          section_id: item.section_id,
-          skill: item.skill,
-          concept_ids: item.concept_ids,
-          prompt: item.prompt,
+          item_id: fixture.item.itemId,
+          section_id: fixture.item.sectionId,
+          skill: fixture.item.skill,
+          concept_ids: fixture.item.conceptIds,
+          prompt: fixture.item.prompt,
           selected_answer: wrongIndex,
-          correct_answer: item.correct_answer,
+          correct_answer: fixture.item.correctAnswer,
           correct: false,
           score: 0,
-          max_score: item.max_score,
-          explanation: item.explanation,
+          max_score: fixture.item.maxScore,
+          explanation: fixture.item.explanation,
           duration_ms: null,
         }],
         source: 'platform_smoke',
       },
     ];
     localStorage.setItem(key, JSON.stringify(state));
-  }, { key: STORAGE_KEY, assessment: koreanAssessment, item: koreanItem, wrongIndex: koreanWrongIndex });
+  }, { key: STORAGE_KEY, fixture: koreanFixture, wrongIndex: koreanWrongIndex });
 
+  const koreanConceptId = koreanFixture.item.conceptIds[0];
   await page.waitForFunction(({ key, conceptId }) => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
     return (state.errorRecords || []).some(record =>
       record.domain === 'korean' && record.concept_id === conceptId && record.status === 'active'
     );
-  }, { key: STORAGE_KEY, conceptId: koreanItem.concept_ids[0] });
+  }, { key: STORAGE_KEY, conceptId: koreanConceptId });
 
   await chooseDomain('korean');
   await page.evaluate(() => {
@@ -151,21 +204,21 @@ try {
     window.__KOREAN_STAGE_ADAPTIVE_V112__.render();
   });
 
-  const koreanRow = page.locator('.ksa-item').filter({ hasText: koreanItem.prompt });
+  const koreanRow = page.locator('.ksa-item').filter({ hasText: koreanFixture.item.prompt });
   await koreanRow.waitFor({ state: 'visible' });
   assert(await koreanRow.locator('[data-ksa-revalidate]').count() === 1, 'korean: staged error is not actionable');
   await koreanRow.locator('[data-ksa-revalidate]').click();
 
   const koreanOverlay = page.locator('#koreanStageAdaptiveOverlay');
   await koreanOverlay.waitFor({ state: 'visible' });
-  await koreanOverlay.locator('.ksa-option').nth(koreanItem.correct_answer).click();
+  await koreanOverlay.locator('.ksa-option').nth(koreanFixture.item.correctAnswer).click();
 
   await page.waitForFunction(({ key, conceptId }) => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
     return (state.errorRecords || []).some(record =>
       record.domain === 'korean' && record.concept_id === conceptId && record.status === 'resolved'
     );
-  }, { key: STORAGE_KEY, conceptId: koreanItem.concept_ids[0] });
+  }, { key: STORAGE_KEY, conceptId: koreanConceptId });
 
   const finalState = await page.evaluate(key => JSON.parse(localStorage.getItem(key) || '{}'), STORAGE_KEY);
   for (const domainId of ['phone', 'retail', 'industry', 'korean']) {
