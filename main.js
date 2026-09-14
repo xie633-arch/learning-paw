@@ -45,6 +45,10 @@ await import('./v04-schema-align.js');
 await import('./phone-knowledge-v09.js');
 await import('./phone-knowledge-gate-v091.js');
 
+// V0.11 attaches stable item / concept / skill metadata to the existing formal
+// assessments and Korean Exit Checks before StudyEvent migration runs.
+await import('./adaptive-metadata-v11.js');
+
 // Migrate legacy history/test results into StudyEvent v1 + Assessment Attempt
 // before app.js reads localStorage, while keeping the current UI backward-compatible.
 await import('./learner-data-v1.js');
@@ -120,3 +124,7 @@ await import('./ux-v08.js');
 // V0.8.1 applies the visual layer: Today-first hierarchy, compact stats,
 // domain accents and stronger App-like navigation / button feedback.
 await import('./visual-ui-v081.js');
+
+// V0.11 generalizes the adaptive loop across ordinary recall, phone / retail /
+// industry formal tests, and Korean Exit Checks without inflating today's FSRS quota.
+await import('./adaptive-learning-v11.js');
