@@ -5,9 +5,10 @@ import {
   deriveCompletedLessons,
   hasCompletedAssessment,
 } from './study-event-read-model-v12.js';
+import { rankActiveErrorRecommendations } from './learner-recommendation-v13.js';
 
 const STORAGE_KEY = 'personal-learning-os:v0.1';
-const VERSION = '0.12.1';
+const VERSION = '0.12.2';
 
 export const DAILY_REVIEW_LIMIT = 10;
 export const DAILY_NEW_LIMIT = 5;
@@ -148,7 +149,6 @@ export function buildTodayPlan({
   if (!domainId || !DOMAIN_LABELS[domainId]) throw new Error(`Unknown learning domain: ${domainId || 'missing'}`);
 
   const schedules = asObject(state.schedules);
-  const errorRecords = asArray(state.errorRecords);
   const nowDate = now instanceof Date ? now : new Date(now);
   const timestamp = nowDate.getTime();
   const dayKey = localDayKey(nowDate);
@@ -174,14 +174,10 @@ export function buildTodayPlan({
   const duePlanned = Math.min(scheduledDue.length, remainingReview);
   const newPlanned = Math.min(unseen.length, remainingNew, Math.max(0, remainingReview - duePlanned));
 
-  const activeErrors = errorRecords
-    .filter(record => record.domain === domainId && record.status === 'active')
-    .sort((a, b) => {
-      const severity = value => value === 'high' ? 2 : value === 'medium' ? 1 : 0;
-      return severity(b.severity) - severity(a.severity)
-        || new Date(b.last_seen_at || 0).getTime() - new Date(a.last_seen_at || 0).getTime();
-    });
-  const plannedErrors = activeErrors.slice(0, dailyRevalidationLimit);
+  const rankedErrors = rankActiveErrorRecommendations(state, domainId, { now: nowDate });
+  const activeErrors = rankedErrors.map(entry => entry.error);
+  const plannedEntries = rankedErrors.slice(0, dailyRevalidationLimit);
+  const plannedErrors = plannedEntries.map(entry => entry.error);
 
   const assessment = assessmentPlan(domainId, state, curriculum, currentLesson, completedSteps);
 
@@ -221,12 +217,15 @@ export function buildTodayPlan({
       dailyNewLimit,
     },
     revalidation: {
-      source: 'ErrorRecord',
+      source: 'LearnerRecommendation + ErrorRecord',
       active: activeErrors.length,
       highSeverity: activeErrors.filter(record => record.severity === 'high').length,
       planned: plannedErrors.length,
       limit: dailyRevalidationLimit,
       errorIds: plannedErrors.map(record => record.error_id).filter(Boolean),
+      recommendationScores: plannedEntries.map(entry => entry.priority_score),
+      actions: plannedEntries.map(entry => entry.action),
+      recommendationIds: plannedEntries.map(entry => entry.recommendation?.recommendation_id || null),
     },
     assessment,
     workload: {
