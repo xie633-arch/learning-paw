@@ -25,11 +25,13 @@ try {
   }));
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.__TODAY_PLAN_V12__?.version === '0.12.1');
-  await page.waitForFunction(() => window.__STUDY_EVENT_READ_MODEL_V12__?.version === '0.12.0');
+  await page.waitForFunction(() => typeof window.__TODAY_PLAN_V12__?.build === 'function');
+  await page.waitForFunction(() => typeof window.__STUDY_EVENT_READ_MODEL_V12__?.deriveTodayPracticeStats === 'function');
+  await page.waitForFunction(() => Boolean(window.__LEARNING_PAW_UX_V08__?.activateTab));
 
   async function selectDomain(domainId) {
     await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
+    await page.waitForFunction(() => !document.querySelector('#domainHub')?.classList.contains('ux-tab-inactive'));
     await page.locator(`[data-domain="${domainId}"]`).click();
     await page.waitForFunction(id => window.__TODAY_PLAN_V12__?.current?.domainId === id, domainId);
     await page.locator('#mobileBottomNav button[data-target="todayLearningCard"]').click();
