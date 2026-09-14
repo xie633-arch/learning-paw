@@ -129,4 +129,10 @@ window.addEventListener('storage', scheduleRender);
 const domainName = document.querySelector('#domainName');
 if (domainName) new MutationObserver(scheduleRender).observe(domainName, { childList: true, subtree: true, characterData: true });
 const todayPlan = document.querySelector('#todayPlanOverview');
-if (todayPlan) new MutationObserver(scheduleRender).observe(todayPlan, { childList: true, subtree: true });
+if (todayPlan) {
+  new MutationObserver(() => {
+    // Today Plan replaces its own innerHTML. Reattach only when that rebuild removed
+    // the recommendation node; mutations caused by this module itself are ignored.
+    if (!todayPlan.querySelector('#recommendationFocusV13')) scheduleRender();
+  }).observe(todayPlan, { childList: true, subtree: true });
+}
