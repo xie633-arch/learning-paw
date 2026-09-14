@@ -88,6 +88,9 @@ jobs:
       - name: Recommendation engine smoke test
         run: node tests/recommendation-engine-smoke.mjs
 
+      - name: Korean Hangul gate and vocab smoke test
+        run: node tests/korean-vocab-smoke.mjs
+
       - name: Retail business-district course smoke test
         run: node tests/retail-business-district-smoke.mjs
 
@@ -132,3 +135,4 @@ jobs:
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/today-plan-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/study-event-ui-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/recommendation-ui-smoke.mjs
+          SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/korean-vocab-ui-smoke.mjs
