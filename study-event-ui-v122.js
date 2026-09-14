@@ -5,6 +5,7 @@ import {
   deriveWeakSignals,
   deriveLatestAssessment,
 } from './study-event-read-model-v12.js';
+import { rankLearningRecommendations } from './learner-recommendation-v13.js';
 
 const STORAGE_KEY = 'personal-learning-os:v0.1';
 const VERSION = '0.12.2';
@@ -84,13 +85,44 @@ function weakMeta(weak) {
   if (weak.occurrences) parts.push(`出现 ${weak.occurrences} 次`);
   if (weak.assessment?.incorrect) parts.push(`客观错 ${weak.assessment.incorrect} 次`);
   if (weak.ratings?.again) parts.push(`不认识 ${weak.ratings.again} 次`);
+  if (weak.recommendation?.action_label) parts.push(`建议：${weak.recommendation.action_label}`);
   return parts.join(' · ');
 }
 
-function severityPercent(weak) {
+function fallbackPriority(weak) {
   if (weak.severity === 'high') return 100;
   if (weak.severity === 'medium') return 66;
   return 40;
+}
+
+function recommendationKey(item) {
+  return `${item.conceptId || `content:${item.contentId || 'unknown'}`}::${item.skill || 'general'}`;
+}
+
+function rankWeakSignals(state, domainId) {
+  const activeWeak = deriveWeakSignals(state, domainId, 100);
+  const recommendations = rankLearningRecommendations(state, domainId, {
+    limit: 100,
+    minimumScore: 0,
+  });
+  const byErrorId = new Map(recommendations.filter(item => item.error_id).map(item => [item.error_id, item]));
+  const bySignal = new Map(recommendations.map(item => [
+    `${item.concept_id || `content:${item.content_id || 'unknown'}`}::${item.skill || 'general'}`,
+    item,
+  ]));
+
+  return activeWeak
+    .map(item => ({
+      ...item,
+      recommendation: byErrorId.get(item.errorId) || bySignal.get(recommendationKey(item)) || null,
+    }))
+    .sort((a, b) => {
+      const aScore = a.recommendation?.priority_score ?? fallbackPriority(a);
+      const bScore = b.recommendation?.priority_score ?? fallbackPriority(b);
+      return bScore - aScore
+        || Number(b.occurrences || 0) - Number(a.occurrences || 0)
+        || new Date(b.lastSeenAt || 0).getTime() - new Date(a.lastSeenAt || 0).getTime();
+    });
 }
 
 function patchWeak(state, domainId) {
@@ -98,7 +130,9 @@ function patchWeak(state, domainId) {
   const weakButton = document.querySelector('#weakDrillBtn');
   if (!weakList) return [];
 
-  const weak = deriveWeakSignals(state, domainId, 3);
+  // Recommendation decides ordering, but the visible daily weak queue remains capped at 3.
+  // Active ErrorRecords are not discarded just because their recommendation score is lower.
+  const weak = rankWeakSignals(state, domainId).slice(0, 3);
   weakList.innerHTML = '';
 
   if (!weak.length) {
@@ -116,6 +150,9 @@ function patchWeak(state, domainId) {
   weak.forEach(item => {
     const row = document.createElement('div');
     row.className = 'weak-item';
+    row.dataset.errorId = item.errorId || '';
+    row.dataset.conceptId = item.conceptId || '';
+    row.dataset.recommendationScore = String(item.recommendation?.priority_score ?? fallbackPriority(item));
 
     const copy = document.createElement('div');
     const title = document.createElement('strong');
@@ -129,11 +166,13 @@ function patchWeak(state, domainId) {
     const meter = document.createElement('div');
     meter.className = 'weak-meter';
     const bar = document.createElement('span');
-    bar.style.width = `${severityPercent(item)}%`;
+    const priorityScore = item.recommendation?.priority_score ?? fallbackPriority(item);
+    bar.style.width = `${Math.max(12, Math.min(100, priorityScore))}%`;
     meter.append(bar);
     const score = document.createElement('div');
     score.className = 'weak-score';
-    score.textContent = `${item.severity === 'high' ? '高优先级' : item.severity === 'medium' ? '中优先级' : '待巩固'} · StudyEvent`;
+    const priorityLabel = priorityScore >= 70 ? '高优先级' : priorityScore >= 40 ? '建议关注' : '待巩固';
+    score.textContent = `推荐 ${priorityScore} · ${priorityLabel}`;
     meterWrap.append(meter, score);
 
     row.append(copy, meterWrap);
@@ -177,6 +216,12 @@ function patchAll() {
       currentId: route.current?.id || route.current?.lesson_id || null,
     } : null,
     weakCount: weak.length,
+    weakOrder: weak.map(item => ({
+      errorId: item.errorId,
+      conceptId: item.conceptId,
+      priorityScore: item.recommendation?.priority_score ?? fallbackPriority(item),
+      action: item.recommendation?.action || null,
+    })),
     latestAssessment,
   };
 }
@@ -188,7 +233,7 @@ function bindWeakAction() {
   button.addEventListener('click', event => {
     const state = readState();
     const domainId = selectedDomainId();
-    if (!deriveWeakSignals(state, domainId, 3).length) return;
+    if (!rankWeakSignals(state, domainId).length) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     const bank = document.querySelector('#adaptiveLearningV11') || document.querySelector('#phoneAdaptiveErrorBank');
@@ -211,6 +256,7 @@ window.__STUDY_EVENT_UI_V122__ = {
   version: VERSION,
   current: null,
   patch: patchAll,
+  rankWeakSignals,
 };
 
 bindWeakAction();
