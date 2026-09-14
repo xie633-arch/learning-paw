@@ -88,6 +88,22 @@ try {
     localStorage.setItem(key, JSON.stringify(state));
   }, STORAGE_KEY);
 
+  await page.waitForTimeout(250);
+  const formalDiagnostic = await page.evaluate(async key => {
+    const state = JSON.parse(localStorage.getItem(key) || '{}');
+    const platform = await import('./platform-data.js');
+    return {
+      metadataRuntime: window.__ADAPTIVE_METADATA_V11__,
+      adapterRuntime: window.__FORMAL_TEST_ADAPTER_V111__,
+      firstQuestion: platform.tests.phone?.questions?.[0],
+      testResults: state.testResults,
+      attempts: state.assessmentAttempts,
+      formalEvents: (state.studyEvents || []).filter(event => String(event.session_id || '').includes('adaptive-formal-1')),
+      formalErrors: (state.errorRecords || []).filter(record => String(record.content_id || '').includes('phone-foundation') || String(record.concept_id || '').includes('phone-soc')),
+    };
+  }, STORAGE_KEY);
+  console.log('FORMAL_ADAPTIVE_DIAGNOSTIC', JSON.stringify(formalDiagnostic));
+
   await page.waitForFunction(key => {
     const state = JSON.parse(localStorage.getItem(key) || '{}');
     return (state.errorRecords || []).some(record => record.concept_id === 'phone-soc-system' && record.skill === 'technical_architecture' && record.status === 'active');
