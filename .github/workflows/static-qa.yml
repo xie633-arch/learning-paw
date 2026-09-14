@@ -88,6 +88,9 @@ jobs:
       - name: Recommendation engine smoke test
         run: node tests/recommendation-engine-smoke.mjs
 
+      - name: Retail business-district course smoke test
+        run: node tests/retail-business-district-smoke.mjs
+
       - name: Curriculum content integrity
         run: node tests/content-integrity.mjs
 
