@@ -82,6 +82,9 @@ jobs:
       - name: Learner data migration smoke test
         run: node tests/learner-data-smoke.mjs
 
+      - name: StudyEvent read model smoke test
+        run: node tests/study-event-read-model-smoke.mjs
+
       - name: Curriculum content integrity
         run: node tests/content-integrity.mjs
 
@@ -121,3 +124,4 @@ jobs:
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/adaptive-general-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/platform-adaptive-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/today-plan-smoke.mjs
+          SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/study-event-ui-smoke.mjs
