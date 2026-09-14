@@ -114,9 +114,9 @@ async function runMobileSmoke(browser) {
   assert(domainCount === 4, `expected 4 learning domains, got ${domainCount}`);
 
   const dueLabel = (await page.locator('#dueCount').locator('xpath=following-sibling::span').textContent())?.trim();
-  const dailyCount = Number((await page.locator('#dueCount').textContent()) || 0);
-  assert(dueLabel === '今日建议', `expected daily-plan label, got ${dueLabel}`);
-  assert(Number.isFinite(dailyCount) && dailyCount <= 10, `daily review plan should be bounded at 10, got ${dailyCount}`);
+  const dueCount = Number((await page.locator('#dueCount').textContent()) || 0);
+  assert(dueLabel === '当前领域到期', `expected current-domain due label, got ${dueLabel}`);
+  assert(Number.isInteger(dueCount) && dueCount >= 0, `current-domain due count should be a non-negative integer, got ${dueCount}`);
 
   const duplicateIds = await page.evaluate(() => {
     const counts = new Map();
@@ -198,7 +198,7 @@ async function runMobileSmoke(browser) {
   await assertResponsive(page, 'Korean baseline assessment');
   await page.locator('#koAssessClose').click();
 
-  // Review flow: verify the bounded daily plan can start and exit.
+  // Review flow: verify the default bounded review session can start and exit.
   await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'phone', '手机产品专家');
   await activateMobileTab(page, 'trainingHub');
@@ -271,4 +271,4 @@ if (failures.length) {
   throw new Error(`Browser smoke found runtime errors:\n${failures.join('\n')}`);
 }
 
-console.log('Browser runtime smoke OK: V0.9 Phone Knowledge Base + V0.8 tabs/daily plan, mobile + desktop, 4 domains, lessons, Korean baseline, review, test, phone variants/pricing.');
+console.log('Browser runtime smoke OK: V0.9 Phone Knowledge Base + V0.8 tabs/current-domain due stats, mobile + desktop, 4 domains, lessons, Korean baseline, review, test, phone variants/pricing.');
