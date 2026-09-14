@@ -141,3 +141,7 @@ await import('./korean-stage-adaptive-v112.js');
 // V0.12 unifies the four domains into one Today Plan without mixing remediation
 // tasks into the FSRS card quota: lesson + bounded review + revalidation + assessment.
 await import('./today-plan-v12.js');
+
+// V0.12.2 migrates the second batch of home views to the StudyEvent read model:
+// route progress, weak summary and latest assessment are now fact-derived views.
+await import('./study-event-ui-v122.js');
