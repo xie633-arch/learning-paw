@@ -22,7 +22,6 @@ try {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__ADAPTIVE_METADATA_V11__?.version === '0.11.0');
   await page.waitForFunction(() => window.__ADAPTIVE_LEARNING_V11__?.version === '0.11.0');
-  await page.waitForFunction(() => window.__LEARNER_DATA_V1__?.state_version === 5);
 
   // 1) Ordinary recall: an "again" rating becomes a recall-gap ErrorRecord.
   await page.evaluate(key => {
@@ -46,6 +45,7 @@ try {
     ];
     localStorage.setItem(key, JSON.stringify(state));
   }, STORAGE_KEY);
+  await page.waitForFunction(() => window.__LEARNER_DATA_V1__?.state_version === 5);
 
   await page.locator('#mobileBottomNav button[data-target="weakCard"]').click();
   await page.locator('#adaptiveLearningV11').waitFor({ state: 'visible' });
