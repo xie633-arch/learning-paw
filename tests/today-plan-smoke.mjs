@@ -25,7 +25,8 @@ try {
   }));
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.__TODAY_PLAN_V12__?.version === '0.12.0');
+  await page.waitForFunction(() => window.__TODAY_PLAN_V12__?.version === '0.12.1');
+  await page.waitForFunction(() => window.__STUDY_EVENT_READ_MODEL_V12__?.version === '0.12.0');
 
   async function selectDomain(domainId) {
     await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
@@ -55,6 +56,44 @@ try {
   assert(koreanPlan.lesson.current.id === 'ko-day-000', `korean: expected Day 0 current lesson, got ${koreanPlan.lesson.current.id}`);
   assert(koreanPlan.assessment.kind === 'staged', 'korean: staged assessment policy missing');
   assert(koreanPlan.assessment.recommended === true, 'korean: Day 0 baseline should be recommended for a fresh learner');
+
+  // P2 read-model proof: add a practice fact directly to StudyEvent without adding legacy history.
+  // Today Plan and hero statistics must consume the fact from the canonical event layer.
+  await selectDomain('phone');
+  await page.evaluate(key => {
+    const state = JSON.parse(localStorage.getItem(key) || '{}');
+    state.history = [];
+    state.studyEvents = Array.isArray(state.studyEvents) ? state.studyEvents : [];
+    state.studyEvents.push({
+      schema_version: '1.0',
+      event_id: 'evt-today-plan-phone-study-event-1',
+      occurred_at: new Date().toISOString(),
+      domain: 'phone',
+      event_type: 'practice_attempt',
+      content_id: 'hardware-soc-001',
+      concept_id: null,
+      skill: 'SoC / 性能',
+      result: { rating: 'good', correct: null, confidence: null },
+      duration_ms: null,
+      session_id: 'today-plan-study-event-smoke',
+      source: 'today_plan_smoke',
+      device_id: null,
+      algorithm: 'FSRS',
+      session_mode: 'due',
+    });
+    localStorage.setItem(key, JSON.stringify(state));
+  }, STORAGE_KEY);
+
+  await page.waitForFunction(() => {
+    const plan = window.__TODAY_PLAN_V12__?.current;
+    return plan?.domainId === 'phone'
+      && plan.review.source === 'studyEvents'
+      && plan.review.reviewedToday === 1
+      && plan.review.knownToday === 1
+      && plan.review.newToday === 1;
+  });
+  assert((await page.locator('#reviewedToday').textContent()) === '1', 'phone: hero reviewedToday did not consume StudyEvent read model');
+  assert((await page.locator('#knownToday').textContent()) === '1', 'phone: hero knownToday did not consume StudyEvent read model');
 
   // Create one real StudyEvent error for retail. Learner Data must derive an ErrorRecord,
   // while the FSRS review quota remains a separate count.
@@ -98,7 +137,7 @@ try {
   assert(retailText.includes('1 项优先重验证'), `retail: Today Plan did not surface weak revalidation: ${retailText}`);
 
   await context.close();
-  console.log('Today Plan smoke OK: four domains share lesson/review/revalidation/assessment planning; review 10/5 limits remain independent from remediation.');
+  console.log('Today Plan smoke OK: four domains share planning; StudyEvent drives daily stats; review 10/5 limits remain independent from remediation.');
 } finally {
   await browser.close();
 }
