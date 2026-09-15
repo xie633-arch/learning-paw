@@ -111,9 +111,14 @@ async function runMobileSmoke(browser) {
   assert(initialPrompt.includes('一次只给我一个问题'), 'tutor prompt should enforce interactive teaching');
 
   await page.locator('#koreanTutorVolume').fill('2');
+  await page.locator('#koreanTutorVolume').blur();
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('learning-paw:korean-tutor:v1') || '{}').volume === '2');
   await page.locator('#koreanTutorLesson').fill('4');
+  await page.locator('#koreanTutorLesson').blur();
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('learning-paw:korean-tutor:v1') || '{}').lesson === '4');
   await page.locator('#koreanTutorFocus').fill('第 4 课课文与语法 1');
   await page.locator('#koreanTutorFocus').blur();
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('learning-paw:korean-tutor:v1') || '{}').focus === '第 4 课课文与语法 1');
   await page.waitForFunction(() => document.querySelector('#koreanTutorPrompt')?.textContent?.includes('第 4 课课文与语法 1'));
   const prompt = (await page.locator('#koreanTutorPrompt').textContent()) || '';
   assert(prompt.includes('- 册 / 级：2'), 'updated textbook volume missing from prompt');
