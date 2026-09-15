@@ -62,7 +62,6 @@ await import('./korean-assessment-ui-v05.js');
 
 // V0.5 mobile information architecture + built-in lesson reading content.
 await import('./learning-ui-v05.js');
-await import('./korean-completion-guard-v06.js');
 await import('./mobile-domain-grid-v051.js');
 await import('./official-visual-gallery-v051.js');
 await import('./lesson-official-visuals-v052.js');
