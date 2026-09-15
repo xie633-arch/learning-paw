@@ -128,9 +128,11 @@ try {
     await injectFormalError(domainId);
   }
 
+  // Week 1 alphabet learning moved outside Learning Paw. Keep the cross-domain
+  // adaptive contract on the first still-active in-platform Korean stage: Week 2.
   const koreanFixture = await page.evaluate(async () => {
     const { koreanAssessments } = await import('./korean-assessment-data-v05.js');
-    const assessment = koreanAssessments.week1;
+    const assessment = koreanAssessments.week2;
     const item = assessment?.items?.find(candidate => candidate.type === 'mcq');
     if (!assessment || !item) return null;
     return {
@@ -152,7 +154,7 @@ try {
     };
   });
 
-  assert(koreanFixture?.item?.prompt, 'korean: no objective Week 1 runtime item available for platform smoke');
+  assert(koreanFixture?.item?.prompt, 'korean: no objective Week 2 runtime item available for platform smoke');
   const koreanWrongIndex = koreanFixture.item.correctAnswer === 0 ? 1 : 0;
 
   await page.evaluate(({ key, fixture, wrongIndex }) => {
@@ -162,7 +164,7 @@ try {
       ...(state.assessmentAttempts || []),
       {
         schema_version: '1.0',
-        attempt_id: 'platform-korean-week1-1',
+        attempt_id: 'platform-korean-week2-1',
         assessment_id: fixture.assessment.assessmentId,
         domain: 'korean',
         started_at: now,
@@ -229,7 +231,7 @@ try {
   }
 
   await context.close();
-  console.log('Platform adaptive smoke OK: phone + retail + industry + Korean all generate actionable errors and resolve through targeted revalidation.');
+  console.log('Platform adaptive smoke OK: phone + retail + industry + Korean Week 2 all generate actionable errors and resolve through targeted revalidation.');
 } finally {
   await browser.close();
 }
