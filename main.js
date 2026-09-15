@@ -2,7 +2,7 @@ await import('./korean-v04.js');
 
 const { curricula, domainOverrides, visualSources } = await import('./platform-data.js');
 
-// Legacy Korean modules still provide assessment/content compatibility, but V0.16
+// Legacy Korean modules still provide assessment/content compatibility, but V0.16+
 // replaces their visible course/review flow with Yonsei textbook + AI private tutor.
 const koreanSteps = curricula.korean?.steps || [];
 koreanSteps.forEach(step => {
@@ -31,6 +31,10 @@ await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
 await import('./korean-practice-month1-v06.js');
 await import('./korean-lesson-content-v05.js');
+
+// V0.17 gives the tutor an official-source lesson map so the learner only chooses
+// volume / lesson; Learning Paw supplies today's topic, goals and practice focus.
+await import('./korean-yonsei-guide-v17.js');
 
 // V0.16 is the Korean runtime contract: Yonsei Korean is the only course spine,
 // MoMo handles vocabulary memory, and Learning Paw schedules/records ~30-minute
@@ -90,7 +94,7 @@ const syncKoreanRuntimeCopy = () => {
 
   const lead = document.querySelector('#homeLead');
   if (lead) {
-    lead.textContent = '《延世韩国语》决定学什么；Learning Paw 负责教材进度与私教任务；ChatGPT 负责 30 分钟互动教学；墨墨负责词汇记忆。';
+    lead.textContent = '《延世韩国语》决定学什么；Learning Paw 自动给出官方单元导航和今日重点；ChatGPT 负责 30 分钟互动教学；墨墨负责词汇记忆。';
   }
 
   const notice = document.querySelector('#koreanNotice');
@@ -98,7 +102,7 @@ const syncKoreanRuntimeCopy = () => {
     const heading = notice.querySelector('h2');
     const body = notice.querySelector('p.muted');
     if (heading) heading.textContent = '《延世韩国语》 × AI 韩语私教';
-    if (body) body.textContent = '韩语模块不再提供站内单词卡或 FSRS 词汇复习。每天从 Learning Paw 生成约 30 分钟私教任务，在 ChatGPT 完成教材讲解、互动练习、主动输出、纠错和复盘；词汇记忆交给墨墨记忆卡。';
+    if (body) body.textContent = '只需选择当前册 / 课，Learning Paw 会根据延世大学官方课程地图自动给出单元主题、今日重点和输出任务；ChatGPT 完成讲解、互动练习、主动输出、纠错和复盘；词汇记忆交给墨墨记忆卡。';
   }
 };
 
@@ -129,3 +133,7 @@ await import('./recommendation-ui-v13.js');
 // recording and tutor-history views. Continuous conversation happens in ChatGPT.
 await import('./korean-tutor-ui-v16.js');
 await import('./korean-tutor-polish-v161.js');
+
+// V0.17 augments the tutor surface with automatic official-theme guidance and
+// source links, while keeping page-specific notes optional.
+await import('./korean-yonsei-guide-ui-v17.js');
