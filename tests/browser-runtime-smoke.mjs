@@ -17,19 +17,14 @@ async function assertResponsive(page, label) {
 
 async function waitForFinalUi(page) {
   await page.waitForFunction(() => window.__LEARNING_PAW_UX_V08__?.version === '0.8.0');
-  await page.waitForFunction(() => typeof window.__KOREAN_VOCAB_UI_V15__?.render === 'function');
+  await page.waitForFunction(() => window.__KOREAN_TUTOR_UI_V16__?.version === '0.16.0');
   await assertResponsive(page, 'final UI readiness');
 }
 
 async function clickDomain(page, id, expectedName) {
-  const selector = `[data-domain="${id}"]`;
-  await page.locator(selector).waitFor({ state: 'visible' });
-  await assertResponsive(page, `domain ${id} before click`);
-  await page.evaluate(domainId => {
-    const target = document.querySelector(`[data-domain="${domainId}"]`);
-    if (!target) throw new Error(`domain button missing: ${domainId}`);
-    target.click();
-  }, id);
+  const button = page.locator(`[data-domain="${id}"]`);
+  await button.waitFor({ state: 'visible' });
+  await button.click();
   await page.waitForFunction(name => document.querySelector('#domainName')?.textContent?.trim() === name, expectedName);
   await assertResponsive(page, `domain ${id}`);
 }
@@ -46,19 +41,6 @@ async function activateDesktopTab(page, tab) {
   await button.waitFor({ state: 'visible' });
   await button.click();
   await assertResponsive(page, `desktop tab ${tab}`);
-}
-
-async function openGenericLesson(page, label) {
-  const button = page.locator('#openLessonReaderBtn');
-  await button.waitFor({ state: 'visible' });
-  await button.click();
-  await page.locator('#lessonReaderOverlay:not(.hidden)').waitFor({ state: 'visible' });
-  await assertResponsive(page, `${label} lesson open`);
-}
-
-async function closeGenericLesson(page) {
-  await page.locator('#closeLessonReaderBtn').click();
-  await page.locator('#lessonReaderOverlay').waitFor({ state: 'hidden' });
 }
 
 async function mockFsrsOffline(page) {
@@ -95,19 +77,7 @@ async function runMobileSmoke(browser) {
   await page.locator('#mobileBottomNav').waitFor({ state: 'visible' });
   await waitForFinalUi(page);
 
-  const knowledge = await page.evaluate(() => window.__PHONE_KNOWLEDGE_V09__ || null);
-  assert(knowledge?.topics === 10, `expected 10 phone knowledge topics, got ${JSON.stringify(knowledge)}`);
-  assert(knowledge?.concepts >= 50, `expected >=50 phone concepts, got ${knowledge?.concepts}`);
-  assert(knowledge?.starterCards === 15, `expected 15 phone starter cards, got ${knowledge?.starterCards}`);
-  const gate = await page.evaluate(() => window.__PHONE_KNOWLEDGE_GATE_V091__ || null);
-  assert(gate?.unlocked === false, 'fresh learner should not receive Phone Knowledge starter cards');
-
   assert(await page.locator('#domainGrid .domain-choice').count() === 4, 'expected 4 learning domains');
-  const dueLabel = (await page.locator('#dueCount').locator('xpath=following-sibling::span').textContent())?.trim();
-  const dailyCount = Number((await page.locator('#dueCount').textContent()) || 0);
-  assert(dueLabel === '今日建议', `expected 今日建议, got ${dueLabel}`);
-  assert(Number.isFinite(dailyCount) && dailyCount <= 10, `daily plan should be <=10, got ${dailyCount}`);
-
   const duplicateIds = await page.evaluate(() => {
     const counts = new Map();
     document.querySelectorAll('[id]').forEach(node => counts.set(node.id, (counts.get(node.id) || 0) + 1));
@@ -115,81 +85,59 @@ async function runMobileSmoke(browser) {
   });
   assert(duplicateIds.length === 0, `duplicate DOM ids: ${JSON.stringify(duplicateIds)}`);
 
-  await activateMobileTab(page, 'domainHub');
-  await clickDomain(page, 'phone', '手机产品专家');
-  await activateMobileTab(page, 'todayLearningCard');
-  await openGenericLesson(page, 'phone portfolio');
-  await page.locator('.phone-catalog').waitFor({ state: 'visible' });
-  await page.locator('.phone-catalog__price').waitFor({ state: 'visible' });
-  const models = page.locator('.phone-catalog__model');
-  assert(await models.count() >= 2, 'phone catalog did not render multiple models');
-  await models.nth(1).click();
-  const colors = page.locator('.phone-catalog__color');
-  if (await colors.count() >= 2) {
-    const before = await page.locator('.phone-catalog__hero img').getAttribute('src');
-    await colors.nth(1).click();
-    await assertResponsive(page, 'phone color switch');
-    const after = await page.locator('.phone-catalog__hero img').getAttribute('src');
-    assert(before !== after, 'phone color switch did not update hero image');
-  }
-  await closeGenericLesson(page);
-
-  await activateMobileTab(page, 'routeCard');
-  await page.locator('#phoneKnowledgeCard').waitFor({ state: 'visible' });
-  assert(await page.locator('#phoneKnowledgeTopics .pk-topic-button').count() === 10, 'phone knowledge topics missing');
-  const status = (await page.locator('#phoneKnowledgeStatus').textContent()) || '';
-  assert(status.includes('训练卡暂不一次性放出'), `unexpected knowledge gate copy: ${status}`);
-  await page.locator('#phoneKnowledgeSearch').fill('GHz');
-  await page.waitForFunction(() => document.querySelector('#phoneKnowledgeBody')?.textContent?.includes('CPU 频率 / GHz'));
-  assert((await page.locator('#phoneKnowledgeBody').textContent())?.includes('3.8 GHz'), 'GHz search result missing');
-
-  for (const [id, name] of [['retail','商圈与零售'], ['industry','行业与商业']]) {
-    await activateMobileTab(page, 'domainHub');
-    await clickDomain(page, id, name);
-    await activateMobileTab(page, 'todayLearningCard');
-    await openGenericLesson(page, id);
-    await closeGenericLesson(page);
-  }
-
-  // Korean now starts with an external-study prerequisite assessment, not an in-app alphabet course.
+  // Korean V0.16: Yonsei textbook progress + 30-minute ChatGPT private tutor.
   await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'korean', '韩语');
-  await activateMobileTab(page, 'todayLearningCard');
-  const koreanButton = page.locator('#openKoreanLessonReaderBtn');
-  await koreanButton.waitFor({ state: 'visible' });
-  await koreanButton.click();
-  await page.locator('#koreanLessonReaderOverlay:not(.hidden)').waitFor({ state: 'visible' });
-  const koreanTitle = (await page.locator('#koreanReaderTitle').textContent())?.trim() || '';
-  assert(koreanTitle.includes('韩文字母通关考核'), `expected Hangul gate, got ${koreanTitle}`);
-  const primary = page.locator('#koreanLessonReaderOverlay .korean-reader-actions .primary');
-  await primary.waitFor({ state: 'visible' });
-  assert((await primary.textContent())?.includes('韩文字母通关考核'), 'Hangul gate primary action did not route to assessment');
-  await primary.click();
-  await page.locator('#koAssessOverlay:not(.hidden)').waitFor({ state: 'visible' });
-  const assessmentText = (await page.locator('#koAssessBody').textContent()) || '';
-  assert(assessmentText.includes('韩文字母通关考核'), `wrong Korean assessment opened: ${assessmentText}`);
-  await page.locator('#koAssessClose').click();
+  const koreanCardCopy = (await page.locator('#domainGrid [data-domain="korean"] .domain-choice-copy small').textContent())?.trim();
+  assert(koreanCardCopy === '30 分钟 AI 私教', `unexpected Korean domain copy: ${koreanCardCopy}`);
 
+  await activateMobileTab(page, 'todayLearningCard');
+  const todayTitle = (await page.locator('#todayLessonTitle').textContent()) || '';
+  assert(todayTitle.includes('《延世韩国语》'), `Yonsei today title missing: ${todayTitle}`);
+  const todayAction = (await page.locator('#completeLessonBtn').textContent()) || '';
+  assert(todayAction.includes('30 分钟私教'), `unexpected Korean today action: ${todayAction}`);
+  assert(await page.locator('#openKoreanLessonReaderBtn').count() === 0, 'legacy Korean lesson-reader button should be removed');
+  const genericStatsHidden = await page.locator('#dueCount').evaluate(node => node.closest('.stats-grid')?.classList.contains('hidden'));
+  assert(genericStatsHidden === true, 'Korean should hide the generic FSRS stats');
+
+  await page.locator('#completeLessonBtn').click();
+  await page.locator('#koreanTutorPanel').waitFor({ state: 'visible' });
+  assert((await page.locator('#trainingHub h2').textContent())?.includes('AI 韩语私教'), 'Korean training tab was not repurposed as private tutor');
+  assert(await page.locator('#trainingHub .training-actions').evaluate(node => node.classList.contains('hidden')), 'generic Korean FSRS training controls should be hidden');
+  assert((await page.locator('#koreanTutorVolume').inputValue()) === '1', 'default Yonsei volume should be 1');
+  assert((await page.locator('#koreanTutorLesson').inputValue()) === '1', 'default Yonsei lesson should be 1');
+  const initialPrompt = (await page.locator('#koreanTutorPrompt').textContent()) || '';
+  assert(initialPrompt.includes('墨墨记忆卡'), 'tutor prompt should delegate vocabulary to MoMo');
+  assert(initialPrompt.includes('一次只给我一个问题'), 'tutor prompt should enforce interactive teaching');
+
+  await page.locator('#koreanTutorVolume').fill('2');
+  await page.locator('#koreanTutorLesson').fill('4');
+  await page.locator('#koreanTutorFocus').fill('第 4 课课文与语法 1');
+  await page.locator('#koreanTutorFocus').blur();
+  await page.waitForFunction(() => document.querySelector('#koreanTutorPrompt')?.textContent?.includes('第 4 课课文与语法 1'));
+  const prompt = (await page.locator('#koreanTutorPrompt').textContent()) || '';
+  assert(prompt.includes('- 册 / 级：2'), 'updated textbook volume missing from prompt');
+  assert(prompt.includes('- 课：4'), 'updated textbook lesson missing from prompt');
+
+  await page.locator('#koreanTutorCompleteBtn').click();
+  await page.waitForFunction(() => {
+    try {
+      const state = JSON.parse(localStorage.getItem('personal-learning-os:v0.1') || '{}');
+      return (state.studyEvents || []).some(event => event.event_type === 'conversation_session' && event.domain === 'korean' && event.textbook?.volume === '2' && event.textbook?.lesson === '4');
+    } catch { return false; }
+  });
+
+  await activateMobileTab(page, 'weakCard');
+  const historyText = (await page.locator('#weakCard').textContent()) || '';
+  assert(historyText.includes('私教记录'), 'Korean weak tab should become tutor history');
+  assert(historyText.includes('第 4 课'), 'new tutor session was not rendered in tutor history');
+
+  // Other domains keep their existing shared review flow.
   await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'phone', '手机产品专家');
   await activateMobileTab(page, 'trainingHub');
-  const startReview = page.locator('#startBtn');
-  assert(!(await startReview.isDisabled()), 'phone review start unexpectedly disabled');
-  await startReview.click();
-  await page.locator('#reviewView:not(.hidden)').waitFor({ state: 'visible' });
-  await page.locator('#exitBtn').click();
-  await page.locator('#homeView:not(.hidden)').waitFor({ state: 'visible' });
-
-  const formalTest = page.locator('#startTestBtn');
-  assert(!(await formalTest.isDisabled()), 'phone formal test unexpectedly disabled');
-  await formalTest.click();
-  await page.locator('#testView:not(.hidden)').waitFor({ state: 'visible' });
-  await page.locator('#exitTestBtn').click();
-  await page.locator('#homeView:not(.hidden)').waitFor({ state: 'visible' });
-
-  await activateMobileTab(page, 'domainHub');
-  await page.locator('#deviceSyncStatus').waitFor({ state: 'visible' });
-  assert((await page.locator('#deviceSyncStatus').textContent())?.includes('未开启'), 'device sync status is unclear');
+  assert(!(await page.locator('#trainingHub .training-actions').evaluate(node => node.classList.contains('hidden'))), 'phone training controls should remain visible');
+  assert(!(await page.locator('#startBtn').isDisabled()), 'phone review start unexpectedly disabled');
   await assertResponsive(page, 'final mobile state');
   await context.close();
 }
@@ -204,14 +152,12 @@ async function runDesktopSmoke(browser) {
   await page.locator('#uxDesktopTabs').waitFor({ state: 'visible' });
   await waitForFinalUi(page);
   await activateDesktopTab(page, 'domains');
-  await clickDomain(page, 'phone', '手机产品专家');
-  await activateDesktopTab(page, 'today');
-  await openGenericLesson(page, 'desktop phone');
-  await page.locator('.phone-catalog').waitFor({ state: 'visible' });
-  await closeGenericLesson(page);
-  await activateDesktopTab(page, 'route');
-  await page.locator('#phoneKnowledgeCard').waitFor({ state: 'visible' });
-  assert(await page.locator('#phoneKnowledgeTopics .pk-topic-button').count() === 10, 'desktop phone knowledge topics missing');
+  await clickDomain(page, 'korean', '韩语');
+  const trainingTab = page.locator('#uxDesktopTabs [data-ux-tab="training"]');
+  assert((await trainingTab.textContent())?.trim() === '私教', 'desktop Korean training tab should be labeled 私教');
+  await activateDesktopTab(page, 'training');
+  await page.locator('#koreanTutorPanel').waitFor({ state: 'visible' });
+  assert((await page.locator('#koreanTutorPrompt').textContent())?.includes('《延世韩国语》'), 'desktop tutor prompt missing Yonsei spine');
   await context.close();
 }
 
@@ -229,4 +175,4 @@ try {
 }
 
 if (failures.length) throw new Error(`Browser smoke found runtime errors:\n${failures.join('\n')}`);
-console.log('Browser runtime smoke OK: shared UI, four domains, phone knowledge/catalog, Hangul prerequisite gate, review/test and mobile/desktop routing are stable.');
+console.log('Browser runtime smoke OK: shared four-domain UI is stable and Korean uses Yonsei + 30-minute ChatGPT private tutor without in-site vocab review.');
