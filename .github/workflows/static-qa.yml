@@ -91,6 +91,9 @@ jobs:
       - name: Korean Yonsei AI tutor smoke test
         run: node tests/korean-tutor-smoke.mjs
 
+      - name: Korean Yonsei official guide smoke test
+        run: node tests/korean-yonsei-guide-smoke.mjs
+
       - name: Retail business-district course smoke test
         run: node tests/retail-business-district-smoke.mjs
 
@@ -128,6 +131,7 @@ jobs:
           done
 
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/browser-runtime-smoke.mjs
+          SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/korean-yonsei-guide-ui-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/product-lab-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/adaptive-loop-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/adaptive-general-smoke.mjs
