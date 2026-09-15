@@ -1,23 +1,15 @@
 await import('./korean-v04.js');
 
-// Keep the running Korean module aligned with the Obsidian decision:
-// Learning Paw schedules/records speaking tasks; continuous voice practice happens in ChatGPT Voice.
 const { curricula, domainOverrides, visualSources } = await import('./platform-data.js');
+
+// Legacy Korean modules still provide assessment/content compatibility, but V0.16
+// replaces their visible course/review flow with Yonsei textbook + AI private tutor.
 const koreanSteps = curricula.korean?.steps || [];
 koreanSteps.forEach(step => {
   (step.activities || []).forEach(activity => {
     if (activity.type === 'ai_conversation') activity.type = 'chatgpt_voice_task';
   });
 });
-
-if (domainOverrides.korean) {
-  domainOverrides.korean.modes = [
-    { label: 'Day 0–28 课程路线', status: '可用' },
-    { label: '主动表达 / 听写 / TTS', status: '可用' },
-    { label: 'ChatGPT Voice 每日任务', status: '可用' },
-    { label: '每日 Exit Check + Day 0 / 7 / 14 / 21 / 28 阶段验收', status: '可用' },
-  ];
-}
 
 // Keep the generic fallback aligned with the current phone generation too.
 // The richer official gallery replaces this UI later, but a failed enhancement must never fall back to Pura 80.
@@ -29,26 +21,22 @@ if (legacyPuraSource) {
 }
 
 // V0.14.1 deepens the Retail domain with one continuous 16-lesson route.
-// Lessons 03-11 are the reusable business-district battle system:
-// objective × district × position × partner -> one-store-one-plan -> war-room review.
 await import('./retail-business-district-v141.js');
 
-// V0.7 replaces in-app Hangul teaching with one prerequisite assessment gate.
-// Learners can use Bilibili or any preferred course for Hangul input; Learning Paw
-// verifies readiness before unlocking the rest of the Korean route.
+// Keep the previous Korean prerequisite/assessment implementation available for
+// compatibility with existing learning records and stage checks.
 await import('./korean-hangul-gate-v07.js');
 await import('./korean-hangul-gate-compat-v071.js');
-// V0.15 adds the Korean memory layer: vocabulary items remain inside the same
-// FSRS / StudyEvent engine but gain language-specific directions and audio metadata.
-await import('./korean-vocab-v15.js');
-
 await import('./korean-voice-v04.js');
 await import('./korean-content-v04.js');
 await import('./korean-practice-month1-v06.js');
-
-// Korean lessons retain concise built-in references, while external courses can
-// provide the primary explanation/input layer.
 await import('./korean-lesson-content-v05.js');
+
+// V0.16 is the Korean runtime contract: Yonsei Korean is the only course spine,
+// MoMo handles vocabulary memory, and Learning Paw schedules/records ~30-minute
+// ChatGPT private-tutor sessions. It also removes legacy Korean cards from the
+// shared FSRS card pool without changing the other domains.
+await import('./korean-tutor-v16.js');
 
 await import('./v04-boot.js');
 await import('./v04-schema-align.js');
@@ -65,22 +53,15 @@ await import('./adaptive-metadata-v11.js');
 // Migrate legacy history/test results into StudyEvent v1 + Assessment Attempt
 // before app.js reads localStorage, while keeping the current UI backward-compatible.
 await import('./learner-data-v1.js');
-// V0.11.3 prevents the base app's older in-memory state from overwriting newer
-// StudyEvent / ErrorRecord facts written by adaptive-learning modules.
 await import('./state-write-guard-v113.js');
-// V0.11.1 upgrades already-migrated formal-test attempts/events with stable
-// concept and skill metadata so existing learner history also becomes actionable.
 await import('./formal-test-adapter-v111.js');
 await import('./app.js');
-await import('./korean-voice-ui-v04.js');
 
-// Korean staged assessment now begins with the Hangul prerequisite gate, then
-// continues to the later stage checks.
+// Existing Korean stage assessments remain available as a separate capability.
 await import('./korean-assessment-ui-v05.js');
 
 // V0.5 mobile information architecture + built-in lesson reading content.
 await import('./learning-ui-v05.js');
-await import('./korean-learning-ui-v05.js');
 await import('./korean-completion-guard-v06.js');
 await import('./mobile-domain-grid-v051.js');
 await import('./official-visual-gallery-v051.js');
@@ -88,7 +69,6 @@ await import('./lesson-official-visuals-v052.js');
 
 // V0.7 product-learning interaction: one ecommerce-style Variant catalog for all current phone families.
 await import('./phone-family-variant-gallery-v07.js');
-// Price data changes more frequently than product imagery, so keep it as a small independent verified layer.
 await import('./phone-family-pricing-v071.js');
 
 // V0.9 searchable phone-tech library. Keep it inside the Route card so the V0.8
@@ -99,14 +79,10 @@ const routeCard = document.querySelector('#routeCard');
 if (phoneKnowledgeCard && routeCard && !routeCard.contains(phoneKnowledgeCard)) routeCard.append(phoneKnowledgeCard);
 
 // V0.9.1 connects technical concepts to current real products and official specs.
-// It lives inside the Knowledge Base so browsing facts does not inflate today's FSRS workload.
 await import('./phone-product-lab-v091.js');
 
-// V0.10 closes the adaptive loop: Product Lab attempts -> StudyEvent -> Error Bank
-// -> Concept remediation -> revalidation -> resolved ErrorRecord.
+// V0.10 closes the adaptive loop for Product Lab.
 await import('./phone-adaptive-v10.js');
-// Product Lab rerenders its case DOM after each answer; this small observer keeps
-// the adaptive feedback note attached to the newly rendered feedback block.
 await import('./phone-adaptive-note-sync-v101.js');
 
 const syncKoreanRuntimeCopy = () => {
@@ -115,15 +91,15 @@ const syncKoreanRuntimeCopy = () => {
 
   const lead = document.querySelector('#homeLead');
   if (lead) {
-    lead.textContent = '优质网课负责新知识输入；Learning Paw 负责韩文字母通关、FSRS 词汇记忆、听音与主动回忆、阶段验收；ChatGPT Voice 负责连续口语输出。';
+    lead.textContent = '《延世韩国语》决定学什么；Learning Paw 负责教材进度与私教任务；ChatGPT 负责 30 分钟互动教学；墨墨负责词汇记忆。';
   }
 
   const notice = document.querySelector('#koreanNotice');
   if (notice) {
     const heading = notice.querySelector('h2');
     const body = notice.querySelector('p.muted');
-    if (heading) heading.textContent = '韩语：网课输入 × 词汇记忆 × Voice 输出';
-    if (body) body.textContent = '韩文字母和新语法可以跟随你喜欢的网课学习；Learning Paw 不重复造一套网课，而是负责前置考核、单词与例句音频、FSRS 复习、主动回忆、听写、薄弱重练和阶段验收。连续口语训练交给 ChatGPT Voice。';
+    if (heading) heading.textContent = '《延世韩国语》 × AI 韩语私教';
+    if (body) body.textContent = '韩语模块不再提供站内单词卡或 FSRS 词汇复习。每天从 Learning Paw 生成约 30 分钟私教任务，在 ChatGPT 完成教材讲解、互动练习、主动输出、纠错和复盘；词汇记忆交给墨墨记忆卡。';
   }
 };
 
@@ -137,37 +113,19 @@ if (koreanDomainName) {
   });
 }
 
-// V0.8 turns the long dashboard into real tab views and replaces the misleading
-// "all unseen cards are due" presentation with a bounded daily review plan.
+// V0.8 turns the long dashboard into real tab views and a bounded daily plan.
 await import('./ux-v08.js');
-
-// V0.8.1 applies the visual layer: Today-first hierarchy, compact stats,
-// domain accents and stronger App-like navigation / button feedback.
 await import('./visual-ui-v081.js');
 
-// V0.11 generalizes the adaptive loop across ordinary recall, phone / retail /
-// industry formal tests, and Korean Exit Checks without inflating today's FSRS quota.
+// Shared adaptive learning remains active for the other domains and for retained
+// Korean assessment errors; Korean vocabulary review itself is no longer scheduled.
 await import('./adaptive-learning-v11.js');
-// V0.11.2 makes Korean Week 1 / 2 / 3 / Month 1 assessment errors actionable in
-// the same weak-knowledge view with single-item revalidation and resolved state.
 await import('./korean-stage-adaptive-v112.js');
-
-// V0.12 unifies the four domains into one Today Plan without mixing remediation
-// tasks into the FSRS card quota: lesson + bounded review + revalidation + assessment.
 await import('./today-plan-v12.js');
-
-// V0.12.2 migrates the second batch of home views to the StudyEvent read model:
-// route progress, weak summary and latest assessment are now fact-derived views.
 await import('./study-event-ui-v122.js');
-
-// V0.13 starts P3: one domain-agnostic Concept × Skill recommender ranks learner
-// evidence and proposes the next remediation mode.
 await import('./learner-recommendation-v13.js');
-// First consumer: Today Plan displays one explainable recommendation focus without
-// changing Curriculum, FSRS, revalidation or Assessment quotas.
 await import('./recommendation-ui-v13.js');
 
-// V0.15 language-specific presentation layer. It does not create a second scheduler:
-// the existing review flow still owns FSRS/history/StudyEvent, while this layer turns
-// Korean vocabulary cards into an audio-first one-word-at-a-time trainer.
-await import('./korean-vocab-ui-v15.js');
+// V0.16 presentation layer: textbook progress, private-tutor prompt, completion
+// recording and tutor-history views. Continuous conversation happens in ChatGPT.
+await import('./korean-tutor-ui-v16.js');
