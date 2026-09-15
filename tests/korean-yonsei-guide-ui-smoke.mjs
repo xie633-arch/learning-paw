@@ -32,7 +32,7 @@ try {
   }));
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.__KOREAN_YONSEI_GUIDE_UI_V17__?.version === '0.17.1');
+  await page.waitForFunction(() => window.__KOREAN_YONSEI_GUIDE_UI_V17__?.version === '0.17.2');
 
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
   await page.locator('[data-domain="korean"]').click();
@@ -80,7 +80,7 @@ try {
   assert(guide2.includes('物品'), `lesson 2 did not update automatically: ${guide2}`);
 
   await context.close();
-  console.log('Korean Yonsei guide UI smoke OK: lesson selection auto-fills textbook focus, guide, prompt and official sources.');
+  console.log('Korean Yonsei guide UI smoke OK: lesson selection auto-fills textbook focus, guide, prompt and official sources without DOM observer loops.');
 } finally {
   await browser.close();
 }
