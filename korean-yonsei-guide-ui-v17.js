@@ -5,7 +5,7 @@ import {
 
 const TUTOR_STORAGE_KEY = 'learning-paw:korean-tutor:v1';
 const GUIDE_STORAGE_KEY = 'learning-paw:korean-yonsei-guide:v1';
-const VERSION = '0.17.0';
+const VERSION = '0.17.1';
 let queued = false;
 let applying = false;
 
@@ -20,6 +20,14 @@ function writeJson(key, value) {
 
 function isKoreanSelected() {
   return document.querySelector('#domainName')?.textContent?.trim() === '韩语';
+}
+
+function setText(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
+function setHtml(node, value) {
+  if (node && node.innerHTML !== value) node.innerHTML = value;
 }
 
 function ensureStyles() {
@@ -69,21 +77,27 @@ function persistAutoFocus(settings, guide, focusNode) {
   const currentFocus = String(settings.focus || '').trim();
   const previousAuto = String(state.lastAutoFocus || '').trim();
   const canReplace = !currentFocus || currentFocus === previousAuto;
+  let didReplace = false;
 
   if (canReplace && currentFocus !== guide.autoFocus) {
     const next = { ...readJson(TUTOR_STORAGE_KEY, {}), ...settings, focus: guide.autoFocus };
     writeJson(TUTOR_STORAGE_KEY, next);
-    if (focusNode) {
+    if (focusNode && focusNode.value !== guide.autoFocus) {
       focusNode.value = guide.autoFocus;
       focusNode.dispatchEvent(new Event('input', { bubbles: true }));
     }
+    didReplace = true;
   }
 
-  writeJson(GUIDE_STORAGE_KEY, {
-    lastAutoFocus: guide.autoFocus,
-    lessonKey: `1-${guide.lesson}`,
-    updatedAt: new Date().toISOString(),
-  });
+  const lessonKey = `1-${guide.lesson}`;
+  if (state.lastAutoFocus !== guide.autoFocus || state.lessonKey !== lessonKey) {
+    writeJson(GUIDE_STORAGE_KEY, {
+      lastAutoFocus: guide.autoFocus,
+      lessonKey,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+  return didReplace;
 }
 
 function guideMarkup(guide) {
@@ -119,11 +133,14 @@ function renderGuide(panel, guide) {
     else panel.prepend(node);
   }
 
-  if (!guide) {
-    node.innerHTML = '<div class="yonsei-guide-unmatched">当前册 / 课还没有匹配到内置官方课程地图。你仍然可以补充页码或上传教材页面；平台不会凭空编造教材目录。</div>';
-    return;
+  const markup = guide
+    ? guideMarkup(guide)
+    : '<div class="yonsei-guide-unmatched">当前册 / 课还没有匹配到内置官方课程地图。你仍然可以补充页码或上传教材页面；平台不会凭空编造教材目录。</div>';
+  const key = guide ? `lesson-${guide.lesson}-${guide.book}` : 'unmatched';
+  if (node.dataset.guideKey !== key || node.innerHTML !== markup) {
+    node.dataset.guideKey = key;
+    node.innerHTML = markup;
   }
-  node.innerHTML = guideMarkup(guide);
 }
 
 function syncTodaySurface(guide, settings) {
@@ -131,9 +148,9 @@ function syncTodaySurface(guide, settings) {
   const title = document.querySelector('#todayLessonTitle');
   const summary = document.querySelector('#todayLessonSummary');
   const details = document.querySelector('#todayLessonDetails');
-  if (title) title.textContent = `《延世韩国语》${settings.volume} · 第 ${guide.lesson} 课｜${guide.titleKo}`;
-  if (summary) summary.textContent = `${guide.titleZh}｜${guide.objective}`;
-  if (details) details.innerHTML = `<strong>平台已生成今日教材重点</strong><p>${guide.focus}</p><p class="muted small">主动输出：${guide.task}</p>`;
+  setText(title, `《延世韩国语》${settings.volume} · 第 ${guide.lesson} 课｜${guide.titleKo}`);
+  setText(summary, `${guide.titleZh}｜${guide.objective}`);
+  setHtml(details, `<strong>平台已生成今日教材重点</strong><p>${guide.focus}</p><p class="muted small">主动输出：${guide.task}</p>`);
 }
 
 function enhanceTutorPanel() {
@@ -150,8 +167,9 @@ function enhanceTutorPanel() {
     const settings = currentDomSettings(panel);
     const guide = buildYonseiTutorGuide(settings);
     const label = panel.querySelector('label[for="koreanTutorFocus"]');
-    if (label) label.textContent = '今天教材范围 / 重点（平台自动生成，可补充具体页码）';
-    focus.placeholder = '平台会按官方单元自动生成；只有想精确到页码时才需要补充。';
+    setText(label, '今天教材范围 / 重点（平台自动生成，可补充具体页码）');
+    const placeholder = '平台会按官方单元自动生成；只有想精确到页码时才需要补充。';
+    if (focus.placeholder !== placeholder) focus.placeholder = placeholder;
 
     if (guide) {
       persistAutoFocus(settings, guide, focus);
@@ -177,7 +195,10 @@ function scheduleEnhance() {
 ensureStyles();
 scheduleEnhance();
 
-['#trainingHub', '#domainName', '#todayLearningCard'].forEach(selector => {
+// Training Hub changes when the tutor panel is first rendered, and domainName changes
+// when the learner switches domains. All later lesson changes are handled by the form
+// event below, so observing the Today card itself would create a self-trigger loop.
+['#trainingHub', '#domainName'].forEach(selector => {
   const node = document.querySelector(selector);
   if (node) new MutationObserver(scheduleEnhance).observe(node, { childList: true, subtree: true, characterData: true });
 });
