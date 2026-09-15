@@ -29,6 +29,7 @@ try {
   await page.waitForFunction(() => typeof window.__STUDY_EVENT_READ_MODEL_V12__?.deriveTodayPracticeStats === 'function');
   await page.waitForFunction(() => typeof window.__LEARNER_RECOMMENDATION_V13__?.rankActiveErrorRecommendations === 'function');
   await page.waitForFunction(() => Boolean(window.__LEARNING_PAW_UX_V08__?.activateTab));
+  await page.waitForFunction(() => window.__KOREAN_TUTOR_UI_V16__?.version === '0.16.0');
 
   async function selectDomain(domainId) {
     await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
@@ -36,11 +37,17 @@ try {
     await page.locator(`[data-domain="${domainId}"]`).click();
     await page.waitForFunction(id => window.__TODAY_PLAN_V12__?.current?.domainId === id, domainId);
     await page.locator('#mobileBottomNav button[data-target="todayLearningCard"]').click();
-    await page.locator('#todayPlanOverview').waitFor({ state: 'visible' });
+    if (domainId === 'korean') {
+      await page.waitForFunction(() => document.querySelector('#todayPlanOverview')?.classList.contains('hidden'));
+      await page.locator('#todayLessonTitle').waitFor({ state: 'visible' });
+    } else {
+      await page.locator('#todayPlanOverview').waitFor({ state: 'visible' });
+    }
     return page.evaluate(() => window.__TODAY_PLAN_V12__.current);
   }
 
-  for (const domainId of ['phone', 'korean', 'retail', 'industry']) {
+  // Phone / retail / industry continue to use the shared bounded Today Plan.
+  for (const domainId of ['phone', 'retail', 'industry']) {
     const plan = await selectDomain(domainId);
     assert(plan.domainId === domainId, `${domainId}: Today Plan did not switch domain`);
     assert(plan.lesson.total > 0, `${domainId}: Today Plan lost curriculum`);
@@ -54,11 +61,17 @@ try {
     assert(text.includes('课程') && text.includes('复习') && text.includes('薄弱重验证') && text.includes('验收'), `${domainId}: Today Plan UI is incomplete`);
   }
 
-  // Fresh Korean Day 0 should surface the baseline as the assessment tied to the current curriculum node.
+  // Korean V0.16 intentionally replaces the generic FSRS/course-plan surface with
+  // one focused daily task: Yonsei Korean + ~30-minute ChatGPT private tutoring.
   const koreanPlan = await selectDomain('korean');
-  assert(koreanPlan.lesson.current.id === 'ko-day-000', `korean: expected Day 0 current lesson, got ${koreanPlan.lesson.current.id}`);
-  assert(koreanPlan.assessment.kind === 'staged', 'korean: staged assessment policy missing');
-  assert(koreanPlan.assessment.recommended === true, 'korean: Day 0 baseline should be recommended for a fresh learner');
+  assert(koreanPlan.domainId === 'korean', 'korean: Today Plan domain state did not switch');
+  assert(await page.locator('#todayPlanOverview').evaluate(node => node.classList.contains('hidden')), 'korean: generic Today Plan should stay hidden');
+  const koreanTitle = (await page.locator('#todayLessonTitle').textContent()) || '';
+  const koreanSummary = (await page.locator('#todayLessonSummary').textContent()) || '';
+  const koreanAction = (await page.locator('#completeLessonBtn').textContent()) || '';
+  assert(koreanTitle.includes('《延世韩国语》'), `korean: Yonsei title missing: ${koreanTitle}`);
+  assert(koreanSummary.length > 0, 'korean: textbook focus summary missing');
+  assert(koreanAction.includes('30 分钟私教') || koreanAction.includes('再上一节私教'), `korean: private-tutor action missing: ${koreanAction}`);
 
   // P2 read-model proof: add a practice fact directly to StudyEvent without adding legacy history.
   // Today Plan and hero statistics must consume the fact from the canonical event layer.
@@ -151,7 +164,7 @@ try {
   assert(retailText.includes('1 项优先重验证'), `retail: Today Plan did not surface weak revalidation: ${retailText}`);
 
   await context.close();
-  console.log('Today Plan smoke OK: four domains share planning; StudyEvent drives daily stats; review 10/5 limits stay independent; Today Plan and Weak Spots share one recommendation queue.');
+  console.log('Today Plan smoke OK: phone/retail/industry keep the shared bounded plan; Korean uses Yonsei + 30-minute tutor; StudyEvent and recommendation queues remain stable.');
 } finally {
   await browser.close();
 }
