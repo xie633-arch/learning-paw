@@ -128,3 +128,4 @@ await import('./recommendation-ui-v13.js');
 // V0.16 presentation layer: textbook progress, private-tutor prompt, completion
 // recording and tutor-history views. Continuous conversation happens in ChatGPT.
 await import('./korean-tutor-ui-v16.js');
+await import('./korean-tutor-polish-v161.js');
