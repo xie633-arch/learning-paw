@@ -32,7 +32,7 @@ try {
   }));
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.__KOREAN_YONSEI_GUIDE_UI_V17__?.version === '0.17.0');
+  await page.waitForFunction(() => window.__KOREAN_YONSEI_GUIDE_UI_V17__?.version === '0.17.1');
 
   await page.locator('#mobileBottomNav button[data-target="domainHub"]').click();
   await page.locator('[data-domain="korean"]').click();
