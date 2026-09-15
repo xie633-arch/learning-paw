@@ -18,6 +18,7 @@ async function assertResponsive(page, label) {
 async function waitForFinalUi(page) {
   await page.waitForFunction(() => window.__LEARNING_PAW_UX_V08__?.version === '0.8.0');
   await page.waitForFunction(() => window.__KOREAN_TUTOR_UI_V16__?.version === '0.16.0');
+  await page.waitForFunction(() => window.__KOREAN_YONSEI_GUIDE_UI_V17__?.version === '0.17.1');
   await assertResponsive(page, 'final UI readiness');
 }
 
@@ -85,7 +86,7 @@ async function runMobileSmoke(browser) {
   });
   assert(duplicateIds.length === 0, `duplicate DOM ids: ${JSON.stringify(duplicateIds)}`);
 
-  // Korean V0.16: Yonsei textbook progress + 30-minute ChatGPT private tutor.
+  // Korean V0.17: Yonsei textbook progress + automatic official lesson guide + 30-minute ChatGPT private tutor.
   await activateMobileTab(page, 'domainHub');
   await clickDomain(page, 'korean', '韩语');
   const koreanCardCopy = (await page.locator('#domainGrid [data-domain="korean"] .domain-choice-copy small').textContent())?.trim();
@@ -180,4 +181,4 @@ try {
 }
 
 if (failures.length) throw new Error(`Browser smoke found runtime errors:\n${failures.join('\n')}`);
-console.log('Browser runtime smoke OK: shared four-domain UI is stable and Korean uses Yonsei + 30-minute ChatGPT private tutor without in-site vocab review.');
+console.log('Browser runtime smoke OK: shared four-domain UI is stable and Korean uses Yonsei official lesson guide + 30-minute ChatGPT private tutor without in-site vocab review.');
