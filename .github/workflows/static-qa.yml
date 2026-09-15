@@ -131,7 +131,7 @@ jobs:
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/product-lab-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/adaptive-loop-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/adaptive-general-smoke.mjs
-          SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/platform-adaptive-smoke.mjs
+          SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/korean-assessment-compat-v16-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/today-plan-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/study-event-ui-smoke.mjs
           SMOKE_BASE_URL=http://127.0.0.1:4173/ node tests/recommendation-ui-smoke.mjs
