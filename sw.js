@@ -1,4 +1,4 @@
-const CACHE_NAME = 'learning-pwa-v0.17.2';
+const CACHE_NAME = 'learning-pwa-v0.18.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -82,8 +82,19 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          const responseUrl = response.url ? new URL(response.url) : null;
+          const contentType = response.headers.get('content-type') || '';
+          const isAppShell = response.ok
+            && !response.redirected
+            && responseUrl?.origin === self.location.origin
+            && contentType.includes('text/html');
+
+          // Cloudflare Access redirects unauthenticated navigation to its login
+          // origin. Never let that response replace the offline application shell.
+          if (isAppShell) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          }
           return response;
         })
         .catch(() => caches.match('./index.html'))

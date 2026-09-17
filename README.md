@@ -229,9 +229,9 @@ GitHub Actions 的 Static QA 当前覆盖：
 
 ## 数据与隐私 / 版权
 
-公开仓库只放程序、可公开的自有课程内容、公开安全资料与官方资源链接。世宗学堂教材保留在官方站点，Learning Paw 只提供官方详情 / 下载入口，不重新分发 PDF。
+代码源保存在私有 GitHub 仓库。仓库只放程序、自有课程内容、公开安全资料与官方资源链接；不保存访问密码、Cloudflare Token 或个人学习记录。世宗学堂教材保留在官方站点，Learning Paw 只提供官方详情 / 下载入口，不重新分发 PDF。
 
-个人学习记录当前保存在本机浏览器，不写入公开 GitHub 仓库。
+个人学习记录当前保存在本机浏览器，不写入 GitHub 仓库。
 
 ## 当前阶段与下一步
 
@@ -250,10 +250,16 @@ GitHub Actions 的 Static QA 当前覆盖：
 
 ## 部署
 
-GitHub Pages：
+生产环境使用 Cloudflare Workers Static Assets，并由 Cloudflare Access 保护整个 Worker。仓库中的 `wrangler.jsonc` 关闭公开 Preview URLs；访问策略与身份信息只在 Cloudflare 控制台管理，不写入客户端或仓库。
 
-https://xie633-arch.github.io/learning-paw/
+本地预览与部署：
 
-`main` 分支更新后由 GitHub Actions 自动发布。
+```bash
+npm install
+npm run dev
+npm run deploy
+```
+
+部署前应先运行仓库现有 Static QA。生产部署验证成功后，GitHub Pages 工作流将被停用。
 
 当前定位：**Learning Paw 已进入“多领域共享学习引擎 + 事实驱动自适应推荐”的阶段。新增功能默认先判断它属于平台共性能力还是领域专项能力，再决定放在哪一层。**

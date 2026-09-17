@@ -1,0 +1,14 @@
+{
+  "name": "learning-paw",
+  "version": "0.18.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-static.mjs",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.133.0"
+  }
+}
