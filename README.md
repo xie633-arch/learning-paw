@@ -250,7 +250,7 @@ GitHub Actions 的 Static QA 当前覆盖：
 
 ## 部署
 
-生产环境使用 Cloudflare Workers Static Assets，并由 Cloudflare Access 保护整个 Worker。仓库中的 `wrangler.jsonc` 关闭公开 Preview URLs；访问策略与身份信息只在 Cloudflare 控制台管理，不写入客户端或仓库。
+生产环境使用 Cloudflare Workers Static Assets。Worker 在返回任何静态资源前执行 GitHub OAuth 身份验证，只允许配置的单一 GitHub 用户；OAuth 密钥、允许用户 ID 和会话签名密钥只保存在 Cloudflare encrypted secrets 中，不写入客户端或仓库。仓库中的 `wrangler.jsonc` 关闭公开 Preview URLs。
 
 本地预览与部署：
 
